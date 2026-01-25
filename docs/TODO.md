@@ -15,7 +15,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 
 ### Local Model Support
 - [ ] Fix local model provider detection (auto-detect GGUF files)
-- [ ] Add Ollama support as LLM provider
+- [x] Add Ollama support as LLM provider
 - [ ] Test llama-cpp-python on Windows and Linux
 - [ ] Add model validation (check GGUF format, file exists)
 - [ ] Better error messages when model fails to load
@@ -37,6 +37,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ---
 
 ## Short-term
+
+### Multimodal: Image Support
+- [ ] Add `images` parameter to chat API (base64 encoded)
+- [ ] Update OllamaService to pass images to API
+- [ ] Add image upload component (file picker, drag-drop, paste)
+- [ ] Image preview before sending
+- [ ] Update TypeScript types for image messages
+- [ ] Test with LLaVA and Llama 3.2 Vision models
 
 ### Streaming Support
 - [ ] Implement SSE endpoint in Python backend
@@ -103,10 +111,16 @@ See "Plugin System & Accountability" section above for detailed plugin roadmap.
 - [ ] Request/response inspector
 - [ ] Performance profiling
 
+### Multimodal: Audio & Video
+- [ ] Audio input with Whisper transcription
+- [ ] Voice output (text-to-speech)
+- [ ] Real-time audio streaming
+- [ ] Video frame extraction for vision models
+- [ ] Screen sharing / screenshot input
+
 ### Advanced Features
 - [ ] Multi-model chat (compare responses side-by-side)
 - [ ] Function calling / tool use support
-- [ ] Voice input/output integration
 - [ ] Image generation support (Stable Diffusion)
 - [ ] Fine-tuning workflow integration
 
