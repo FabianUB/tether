@@ -100,9 +100,20 @@ jobs:
         run: pnpm --filter create-tether-app build
 
       - name: Test scaffold
+        run: node packages/create-tether-app/dist/index.js test-app --skip-prompts --skip-install --template local-llm
+
+      - name: Verify scaffold (Unix)
+        if: runner.os != 'Windows'
         run: |
-          node packages/create-tether-app/dist/index.js test-app --skip-prompts --skip-install --template local-llm
           ls -la test-app/
           ls -la test-app/frontend/
           ls -la test-app/backend/
           ls -la test-app/src-tauri/
+
+      - name: Verify scaffold (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          Get-ChildItem test-app/
+          Get-ChildItem test-app/frontend/
+          Get-ChildItem test-app/backend/
+          Get-ChildItem test-app/src-tauri/

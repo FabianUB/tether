@@ -77,11 +77,10 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ## Long-term
 
 ### Plugin System
-- [ ] Design plugin architecture
-- [ ] Create provider plugin interface
-- [ ] Create UI plugin interface
-- [ ] Plugin discovery and loading
+See "Plugin System & Accountability" section above for detailed plugin roadmap.
 - [ ] Plugin marketplace/registry
+- [ ] Community plugin showcase
+- [ ] Plugin template for contributors
 
 ### GUI Model Manager
 - [ ] Model browser (Hugging Face integration)
@@ -113,6 +112,46 @@ Actionable roadmap with priorities. Check off items as they're completed.
 
 ---
 
+## Plugin System & Accountability
+
+Accountability features are opt-in via plugins. Build the plugin infrastructure first, then create first-party plugins.
+
+### Plugin Infrastructure (Core)
+- [ ] Design plugin architecture and lifecycle hooks
+- [ ] Add middleware system for request/response interception
+- [ ] Create standard interfaces for logging, metrics, tracing
+- [ ] Implement context propagation (correlation IDs, metadata)
+- [ ] Add plugin discovery and loading mechanism
+- [ ] Document plugin development guide
+
+### First-Party Plugins
+
+**@tether/plugin-tracing** (Traceability)
+- [ ] Correlation IDs for request/response pairs
+- [ ] Model identifier in every response
+- [ ] Prompt history storage
+- [ ] Source attribution for RAG context
+
+**@tether/plugin-metrics** (Observability)
+- [ ] Token usage tracking
+- [ ] Latency monitoring
+- [ ] Cost tracking per provider
+- [ ] Dashboard component for metrics
+
+**@tether/plugin-audit** (Ownership)
+- [ ] Audit trail logging
+- [ ] Permission scopes for LLM actions
+- [ ] User/session attribution
+- [ ] Responsibility chain documentation
+
+**@tether/plugin-testing** (Verifiability)
+- [ ] Mock LLM service for deterministic tests
+- [ ] Snapshot testing for prompts
+- [ ] Output validation hooks
+- [ ] Regression testing utilities
+
+---
+
 ## Tech Debt
 
 - [ ] Review and reduce bundle size
@@ -121,6 +160,22 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Add pre-commit hooks (lint-staged, husky)
 - [ ] Improve error boundaries in React
 - [ ] Add request retry logic with exponential backoff
+
+---
+
+## Nice to Have (Low Priority)
+
+Features that would be valuable but aren't essential to the core mission.
+
+### Web Deployment Support
+- [ ] Make frontend detect Tauri vs browser environment
+- [ ] Add env-based API URL fallback (`VITE_API_URL`)
+- [ ] Create Dockerfile for backend deployment
+- [ ] Add docker-compose template
+- [ ] Document web deployment workflow
+- [ ] Consider `--target web` CLI flag for web-only scaffold
+
+*Note: Local LLM support doesn't apply to web — users would need API providers.*
 
 ---
 

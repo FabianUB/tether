@@ -20,6 +20,42 @@ End users should receive a single installer (`.dmg`, `.exe`, `.AppImage`) that w
 
 ---
 
+## AI Accountability Principles
+
+Building trustworthy AI applications requires more than just working code. Tether is designed around four guiding principles that help developers build accountable AI:
+
+### Ownership — Who's responsible?
+Every AI action should have a clear chain of responsibility.
+
+### Traceability — Where did this come from?
+AI responses should be traceable to their source.
+
+### Observability — What's happening inside?
+Developers need visibility into AI behavior.
+
+### Verifiability — Does it do what we expect?
+AI outputs should be testable and reproducible.
+
+### How Tether Enables These Principles
+
+Tether's core stays minimal. Accountability features are **opt-in through plugins**:
+
+```
+@tether/plugin-tracing       # Correlation IDs, request logging
+@tether/plugin-metrics       # Token usage, latency, cost tracking
+@tether/plugin-audit         # Audit trails, permission logs
+tether-plugin-observability  # Python-side metrics and logging
+```
+
+The core framework provides:
+- **Hook points** — Middleware and events where plugins attach (request lifecycle, LLM calls)
+- **Standard interfaces** — Common types for logging, metrics, and tracing
+- **Context propagation** — Pass correlation IDs and metadata through the stack
+
+A hobby project uses none of these. An enterprise healthcare app uses all of them. Same framework, different plugins. Developers pay the complexity cost only for features they actually need.
+
+---
+
 ## What Tether IS
 
 ### A framework for AI/ML desktop applications
