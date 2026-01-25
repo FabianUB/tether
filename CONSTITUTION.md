@@ -20,42 +20,6 @@ End users should receive a single installer (`.dmg`, `.exe`, `.AppImage`) that w
 
 ---
 
-## AI Accountability Principles
-
-Building trustworthy AI applications requires more than just working code. Tether is designed around four guiding principles that help developers build accountable AI:
-
-### Ownership — Who's responsible?
-Every AI action should have a clear chain of responsibility.
-
-### Traceability — Where did this come from?
-AI responses should be traceable to their source.
-
-### Observability — What's happening inside?
-Developers need visibility into AI behavior.
-
-### Verifiability — Does it do what we expect?
-AI outputs should be testable and reproducible.
-
-### How Tether Enables These Principles
-
-Tether's core stays minimal. Accountability features are **opt-in through plugins**:
-
-```
-@tether/plugin-tracing       # Correlation IDs, request logging
-@tether/plugin-metrics       # Token usage, latency, cost tracking
-@tether/plugin-audit         # Audit trails, permission logs
-tether-plugin-observability  # Python-side metrics and logging
-```
-
-The core framework provides:
-- **Hook points** — Middleware and events where plugins attach (request lifecycle, LLM calls)
-- **Standard interfaces** — Common types for logging, metrics, and tracing
-- **Context propagation** — Pass correlation IDs and metadata through the stack
-
-A hobby project uses none of these. An enterprise healthcare app uses all of them. Same framework, different plugins. Developers pay the complexity cost only for features they actually need.
-
----
-
 ## What Tether IS
 
 ### A framework for AI/ML desktop applications
@@ -97,6 +61,43 @@ If your app doesn't need Python or ML capabilities, use Electron, Tauri directly
 
 ### Not a model downloader or hub
 Tether doesn't manage model discovery or downloads. Users bring their own GGUF files or API keys. Future versions may add model management UX.
+
+---
+
+## Plugin Ecosystem: AI Accountability
+
+Tether's core mission is simple: **make it easy to build AI/ML desktop apps**. The framework itself stays minimal and unopinionated.
+
+However, we believe building *trustworthy* AI applications matters. Rather than baking accountability features into the core, Tether will provide a plugin ecosystem that lets developers opt into these capabilities when needed.
+
+### Guiding Principles
+
+The plugin ecosystem is designed around four questions every AI application should be able to answer:
+
+| Principle | Question | What plugins provide |
+|-----------|----------|---------------------|
+| **Ownership** | Who's responsible? | Audit trails, permission scopes, attribution |
+| **Traceability** | Where did this come from? | Correlation IDs, prompt history, source tracking |
+| **Observability** | What's happening inside? | Metrics, logging, token usage dashboards |
+| **Verifiability** | Does it do what we expect? | Testing utilities, output validation, regression tests |
+
+### Planned Plugins
+
+```
+@tether/plugin-tracing       # Correlation IDs, request logging
+@tether/plugin-metrics       # Token usage, latency, cost tracking
+@tether/plugin-audit         # Audit trails, permission logs
+tether-plugin-observability  # Python-side metrics and logging
+```
+
+### What the Core Provides
+
+The core framework only provides the hooks for plugins to attach:
+- **Middleware points** — Request lifecycle, LLM calls, responses
+- **Standard interfaces** — Common types for logging, metrics, tracing
+- **Context propagation** — Pass metadata through the stack
+
+A hobby chat app uses none of these. An enterprise healthcare AI uses all of them. Same framework, different plugins. **You only pay for what you use.**
 
 ---
 
