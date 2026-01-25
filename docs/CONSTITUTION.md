@@ -136,40 +136,22 @@ A hobby chat app uses none of these. An enterprise healthcare AI uses all of the
 
 ## Roadmap
 
-### Phase 1: Foundation (Complete)
-- [x] Core packages (`create-tether-app`, `@tether/core`, `tether`)
-- [x] Template with React + FastAPI + Tauri
-- [x] Local LLM integration via llama-cpp-python
-- [x] OpenAI API support
-- [x] Basic documentation
+This is the high-level vision. For detailed, trackable tasks see [TODO.md](./TODO.md).
+
+### Phase 1: Foundation ✓
+Core packages, template with React + FastAPI + Tauri, local LLM integration, and OpenAI API support.
 
 ### Phase 2: Production Readiness (Current)
-- [ ] Unit and integration tests
-- [ ] Fix local model provider detection
-- [ ] Add Ollama support
-- [ ] Publish to npm and PyPI
-- [ ] Generate app icons
-- [ ] Comprehensive error handling
+Testing, error handling, Ollama support, and publishing to npm/PyPI.
 
 ### Phase 3: Streaming Support
-- [ ] Server-Sent Events (SSE) for token streaming
-- [ ] Frontend streaming hook (`useStreamingChat`)
-- [ ] Typewriter effect component
-- [ ] Backpressure handling
+Server-Sent Events for token streaming, frontend streaming hooks, and typewriter effects.
 
 ### Phase 4: Provider Expansion
-- [ ] Ollama integration (chat, embeddings)
-- [ ] Anthropic Claude API
-- [ ] Google Gemini API
-- [ ] Provider abstraction layer
+Additional providers (Anthropic, Google Gemini) and a unified provider abstraction layer.
 
-### Future Possibilities
-- [ ] Plugin system for custom providers
-- [ ] GUI model manager (download, configure, delete)
-- [ ] RAG template with local embeddings
-- [ ] VS Code extension for debugging
-- [ ] Multi-model chat (compare responses)
-- [ ] Conversation persistence (SQLite)
+### Future
+Plugin system, GUI model manager, RAG templates, and developer tooling.
 
 ---
 
