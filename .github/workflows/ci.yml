@@ -103,6 +103,6 @@ jobs:
         run: |
           node packages/create-tether-app/dist/index.js test-app --skip-prompts --skip-install --template local-llm
           ls -la test-app/
-          ls -la test-app/src/
-          ls -la test-app/src-python/
+          ls -la test-app/frontend/
+          ls -la test-app/backend/
           ls -la test-app/src-tauri/

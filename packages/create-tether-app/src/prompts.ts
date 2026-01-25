@@ -13,7 +13,8 @@ export interface PromptAnswers {
 export async function promptForOptions(
   options: PromptOptions
 ): Promise<PromptAnswers> {
-  const questions: inquirer.QuestionCollection = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const questions: any[] = [];
 
   if (options.needsName) {
     questions.push({
