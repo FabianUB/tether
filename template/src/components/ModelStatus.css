@@ -1,0 +1,22 @@
+.model-status {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-text {
+  font-weight: 500;
+}
+
+.version {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}

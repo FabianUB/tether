@@ -1,0 +1,54 @@
+{
+  "name": "create-tether-app",
+  "version": "0.1.0",
+  "description": "CLI tool for scaffolding Tether AI/ML desktop applications",
+  "type": "module",
+  "bin": {
+    "create-tether-app": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "template"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --watch",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0",
+    "inquirer": "^9.2.0",
+    "ora": "^8.0.0",
+    "validate-npm-package-name": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/inquirer": "^9.0.7",
+    "@types/node": "^20.11.0",
+    "@types/validate-npm-package-name": "^4.0.2",
+    "tsup": "^8.0.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "cli",
+    "tauri",
+    "react",
+    "python",
+    "ai",
+    "ml",
+    "scaffold",
+    "create"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/tether.git",
+    "directory": "packages/create-tether-app"
+  }
+}
