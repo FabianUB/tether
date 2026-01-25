@@ -56,6 +56,13 @@ tether/
 │   └── src-tauri/             # Rust/Tauri shell
 │
 ├── docs/                       # Documentation
+│   ├── CONSTITUTION.md        # Project vision and principles
+│   ├── TODO.md                # Actionable roadmap
+│   ├── getting-started.md     # Quick start guide
+│   ├── frontend-guide.md      # React/TypeScript guide
+│   ├── backend-guide.md       # Python/FastAPI guide
+│   └── deployment.md          # Build and distribution
+│
 └── examples/                   # Example applications
 ```
 
