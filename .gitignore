@@ -48,3 +48,14 @@ Thumbs.db
 
 # PyInstaller
 *.spec
+
+# Lock files (optional - some prefer to commit these)
+# pnpm-lock.yaml
+# uv.lock
+
+# Test artifacts
+test-app/
+
+# Models (too large)
+*.gguf
+models/

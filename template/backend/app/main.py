@@ -54,6 +54,12 @@ app = create_app()
 
 
 if __name__ == "__main__":
+    import argparse
     import uvicorn
 
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    parser = argparse.ArgumentParser(description="Tether Backend API Server")
+    parser.add_argument("--port", type=int, default=8000, help="Port to run the server on")
+    parser.add_argument("--host", type=str, default="127.0.0.1", help="Host to bind to")
+    args = parser.parse_args()
+
+    uvicorn.run(app, host=args.host, port=args.port)

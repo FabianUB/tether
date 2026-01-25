@@ -1,0 +1,40 @@
+{
+  "$schema": "https://schemas.tauri.app/capability/schema.json",
+  "identifier": "default",
+  "description": "Default capabilities for the app",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "binaries/api",
+          "sidecar": true,
+          "args": [
+            "--port",
+            {
+              "validator": "\\d+"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "shell:allow-execute",
+      "allow": [
+        {
+          "name": "binaries/api",
+          "sidecar": true,
+          "args": [
+            "--port",
+            {
+              "validator": "\\d+"
+            }
+          ]
+        }
+      ]
+    },
+    "shell:allow-kill"
+  ]
+}

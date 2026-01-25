@@ -17,7 +17,7 @@ A desktop AI/ML application built with [Tether](https://github.com/your-org/teth
 
 ```bash
 pnpm install
-cd src-python && uv sync
+cd backend && uv sync
 ```
 
 2. Run the development server:
@@ -75,11 +75,11 @@ The installer will be created in `src-tauri/target/release/bundle/`.
 
 ```
 {{PROJECT_NAME}}/
-├── src/                  # React frontend
+├── frontend/             # React frontend
 │   ├── components/       # React components
 │   ├── hooks/            # Custom hooks
 │   └── App.tsx           # Main app component
-├── src-python/           # Python backend
+├── backend/              # Python backend
 │   ├── app/              # FastAPI application
 │   │   ├── routes/       # API endpoints
 │   │   └── services/     # Business logic

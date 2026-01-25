@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
 // Types
 export interface ChatMessage {
@@ -31,10 +32,22 @@ export interface HealthResponse {
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 // Configuration
-const API_URL = 'http://localhost:8000';
+let API_URL = 'http://127.0.0.1:8000';
 const MAX_RETRIES = 30;
 const RETRY_DELAY = 1000;
 const REQUEST_TIMEOUT = 30000;
+
+// Get the API port from Tauri
+async function getApiUrl(): Promise<string> {
+  try {
+    const port = await invoke<number>('get_api_port');
+    API_URL = `http://127.0.0.1:${port}`;
+    return API_URL;
+  } catch {
+    // Fallback for development without Tauri
+    return API_URL;
+  }
+}
 
 // API functions
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
@@ -67,6 +80,9 @@ async function checkHealth(): Promise<HealthResponse> {
 }
 
 async function waitForBackend(): Promise<boolean> {
+  // First, get the correct API URL from Tauri
+  await getApiUrl();
+
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
       const health = await checkHealth();

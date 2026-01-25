@@ -10,8 +10,8 @@
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "python:dev": "cd src-python && uv run uvicorn app.main:app --reload --port 8000",
-    "python:build": "cd src-python && uv run python scripts/build.py"
+    "python:dev": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
+    "python:build": "cd backend && uv run python scripts/build.py"
   },
   "dependencies": {
     "react": "^18.3.0",

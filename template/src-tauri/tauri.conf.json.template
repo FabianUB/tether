@@ -37,14 +37,7 @@
   },
   "plugins": {
     "shell": {
-      "sidecar": true,
-      "scope": [
-        {
-          "name": "binaries/api",
-          "sidecar": true,
-          "args": ["--port", { "validator": "\\d+" }]
-        }
-      ]
+      "open": true
     }
   }
 }

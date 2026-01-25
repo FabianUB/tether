@@ -37,8 +37,8 @@ def get_target_triple() -> str:
 def build() -> None:
     """Build the Python backend using PyInstaller."""
     # Get paths
-    src_python = Path(__file__).parent.parent
-    src_tauri = src_python.parent / "src-tauri"
+    backend_dir = Path(__file__).parent.parent
+    src_tauri = backend_dir.parent / "src-tauri"
     target_triple = get_target_triple()
     binary_name = get_binary_name()
 
@@ -57,18 +57,18 @@ def build() -> None:
         "--distpath",
         str(output_dir),
         "--workpath",
-        str(src_python / "build"),
+        str(backend_dir / "build"),
         "--specpath",
-        str(src_python),
+        str(backend_dir),
         "--clean",
-        str(src_python / "app" / "main.py"),
+        str(backend_dir / "app" / "main.py"),
     ]
 
     print(f"Building Python backend for {target_triple}...")
     print(f"Command: {' '.join(cmd)}")
 
     # Run PyInstaller
-    result = subprocess.run(cmd, cwd=src_python)
+    result = subprocess.run(cmd, cwd=backend_dir)
 
     if result.returncode != 0:
         print("PyInstaller build failed!")
@@ -86,11 +86,11 @@ def build() -> None:
         sys.exit(1)
 
     # Clean up
-    spec_file = src_python / "api.spec"
+    spec_file = backend_dir / "api.spec"
     if spec_file.exists():
         spec_file.unlink()
 
-    build_dir = src_python / "build"
+    build_dir = backend_dir / "build"
     if build_dir.exists():
         import shutil
         shutil.rmtree(build_dir)

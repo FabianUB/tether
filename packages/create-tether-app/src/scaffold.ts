@@ -132,14 +132,14 @@ async function customizeForTemplate(
 ): Promise<void> {
   const pythonServicePath = path.join(
     targetDir,
-    'src-python',
+    'backend',
     'app',
     'services',
     'llm.py'
   );
 
   // Adjust Python dependencies based on template
-  const pyprojectPath = path.join(targetDir, 'src-python', 'pyproject.toml');
+  const pyprojectPath = path.join(targetDir, 'backend', 'pyproject.toml');
   if (await fs.pathExists(pyprojectPath)) {
     let content = await fs.readFile(pyprojectPath, 'utf-8');
 
@@ -177,8 +177,8 @@ async function customizeForTemplate(
 
 async function removeExampleComponents(targetDir: string): Promise<void> {
   const exampleFiles = [
-    path.join(targetDir, 'src', 'components', 'Chat.tsx'),
-    path.join(targetDir, 'src', 'components', 'ChatMessage.tsx'),
+    path.join(targetDir, 'frontend', 'components', 'Chat.tsx'),
+    path.join(targetDir, 'frontend', 'components', 'ChatMessage.tsx'),
   ];
 
   for (const file of exampleFiles) {
@@ -188,7 +188,7 @@ async function removeExampleComponents(targetDir: string): Promise<void> {
   }
 
   // Update App.tsx to remove Chat import
-  const appPath = path.join(targetDir, 'src', 'App.tsx');
+  const appPath = path.join(targetDir, 'frontend', 'App.tsx');
   if (await fs.pathExists(appPath)) {
     let content = await fs.readFile(appPath, 'utf-8');
     content = content.replace(/import.*Chat.*from.*\n?/g, '');

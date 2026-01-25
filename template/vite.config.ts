@@ -10,8 +10,8 @@ export default defineConfig({
     port: 1420,
     strictPort: true,
     watch: {
-      // Ignore the src-tauri and src-python directories
-      ignored: ['**/src-tauri/**', '**/src-python/**'],
+      // Ignore the src-tauri and backend directories
+      ignored: ['**/src-tauri/**', '**/backend/**'],
     },
   },
   // Env variables starting with TAURI_ are exposed to the frontend
