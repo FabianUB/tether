@@ -5,7 +5,7 @@ import { validateProjectName, getPackageVersion } from './utils.js';
 import chalk from 'chalk';
 
 export interface CliOptions {
-  template?: 'local-llm' | 'openai' | 'custom';
+  template?: 'local-llm' | 'ollama' | 'openai' | 'custom';
   skipPrompts?: boolean;
   skipInstall?: boolean;
   useNpm?: boolean;
@@ -20,7 +20,7 @@ export function createCli(): Command {
     .description('Create a new Tether AI/ML desktop application')
     .version(getPackageVersion())
     .argument('[project-name]', 'Name of the project to create')
-    .option('-t, --template <template>', 'ML backend template (local-llm, openai, custom)')
+    .option('-t, --template <template>', 'ML backend template (ollama, local-llm, openai, custom)')
     .option('--skip-prompts', 'Skip interactive prompts and use defaults')
     .option('--skip-install', 'Skip dependency installation')
     .option('--use-npm', 'Use npm instead of pnpm')
@@ -55,13 +55,13 @@ export function createCli(): Command {
           includeExample = answers.includeExample;
         }
 
-        // Default to local-llm if not specified
-        template = template || 'local-llm';
+        // Default to ollama if not specified
+        template = template || 'ollama';
 
         // Scaffold the project
         await scaffoldProject({
           projectName: name,
-          template: template as 'local-llm' | 'openai' | 'custom',
+          template: template as 'local-llm' | 'ollama' | 'openai' | 'custom',
           includeExample,
           skipInstall: options.skipInstall || false,
           packageManager: options.useNpm ? 'npm' : options.useYarn ? 'yarn' : 'pnpm',

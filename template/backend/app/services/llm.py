@@ -19,11 +19,14 @@ class LLMSettings(BaseSettings):
         extra="ignore",
     )
 
-    tether_llm_backend: Literal["local", "openai", "mock"] = "local"
+    tether_llm_backend: Literal["local", "ollama", "openai", "mock"] = "local"
     tether_model_path: Optional[str] = None
     openai_api_key: Optional[str] = None
     tether_openai_model: str = "gpt-4o-mini"
     tether_context_length: int = 4096
+    # Ollama settings
+    tether_ollama_model: str = "llama3.2"
+    tether_ollama_base_url: str = "http://localhost:11434"
 
 
 @lru_cache
@@ -34,7 +37,7 @@ def get_settings() -> LLMSettings:
 class LLMService(ABC):
     """Abstract base class for LLM services."""
 
-    service_type: Literal["local", "openai", "mock"] = "mock"
+    service_type: Literal["local", "ollama", "openai", "mock"] = "mock"
     model_name: str = "unknown"
 
     @abstractmethod
@@ -67,7 +70,7 @@ class LLMService(ABC):
 class MockLLMService(LLMService):
     """Mock LLM service for testing."""
 
-    service_type: Literal["local", "openai", "mock"] = "mock"
+    service_type: Literal["local", "ollama", "openai", "mock"] = "mock"
     model_name = "mock"
 
     def __init__(self):
@@ -95,7 +98,7 @@ class MockLLMService(LLMService):
 class OpenAIService(LLMService):
     """OpenAI API service."""
 
-    service_type: Literal["local", "openai", "mock"] = "openai"
+    service_type: Literal["local", "ollama", "openai", "mock"] = "openai"
 
     def __init__(
         self,
@@ -149,10 +152,79 @@ class OpenAIService(LLMService):
         return response.choices[0].message.content or ""
 
 
+class OllamaService(LLMService):
+    """Ollama LLM service."""
+
+    service_type: Literal["local", "ollama", "openai", "mock"] = "ollama"
+
+    def __init__(
+        self,
+        model: Optional[str] = None,
+        base_url: Optional[str] = None,
+    ):
+        settings = get_settings()
+        self._model = model or settings.tether_ollama_model
+        self._base_url = (base_url or settings.tether_ollama_base_url).rstrip("/")
+        self._client = None
+        self._ready = False
+
+    @property
+    def model_name(self) -> str:
+        return self._model
+
+    async def initialize(self) -> None:
+        try:
+            import httpx
+
+            self._client = httpx.AsyncClient(
+                base_url=self._base_url,
+                timeout=httpx.Timeout(120.0),
+            )
+            # Verify Ollama is running
+            response = await self._client.get("/api/tags")
+            response.raise_for_status()
+            self._ready = True
+        except ImportError:
+            raise ImportError("httpx package not installed")
+        except Exception as e:
+            raise RuntimeError(f"Cannot connect to Ollama at {self._base_url}: {e}")
+
+    async def cleanup(self) -> None:
+        if self._client:
+            await self._client.aclose()
+        self._ready = False
+
+    def is_ready(self) -> bool:
+        return self._ready and self._client is not None
+
+    async def complete(
+        self,
+        prompt: str,
+        *,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+    ) -> str:
+        if not self._client:
+            raise RuntimeError("Ollama client not initialized")
+
+        payload = {
+            "model": self._model,
+            "prompt": prompt,
+            "stream": False,
+            "options": {"temperature": temperature},
+        }
+        if max_tokens:
+            payload["options"]["num_predict"] = max_tokens
+
+        response = await self._client.post("/api/generate", json=payload)
+        response.raise_for_status()
+        return response.json().get("response", "")
+
+
 class LocalLLMService(LLMService):
     """Local LLM service using llama-cpp-python."""
 
-    service_type: Literal["local", "openai", "mock"] = "local"
+    service_type: Literal["local", "ollama", "openai", "mock"] = "local"
 
     def __init__(
         self,
@@ -235,6 +307,8 @@ def get_llm_service() -> LLMService:
 
     if backend == "openai":
         return OpenAIService()
+    elif backend == "ollama":
+        return OllamaService()
     elif backend == "local":
         return LocalLLMService()
     else:

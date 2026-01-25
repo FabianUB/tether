@@ -13,7 +13,7 @@ class LLMService(ABC):
     All LLM backends should implement this interface.
     """
 
-    service_type: Literal["local", "openai", "custom"] = "custom"
+    service_type: Literal["local", "openai", "ollama", "custom"] = "custom"
     model_name: str = "unknown"
 
     @abstractmethod
@@ -92,7 +92,7 @@ class MockLLMService(LLMService):
     Mock LLM service for testing and development.
     """
 
-    service_type: Literal["local", "openai", "custom"] = "custom"
+    service_type: Literal["local", "openai", "ollama", "custom"] = "custom"
     model_name: str = "mock"
 
     def __init__(self, response: str = "This is a mock response."):

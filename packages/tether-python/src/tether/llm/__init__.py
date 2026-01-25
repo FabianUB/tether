@@ -19,6 +19,12 @@ def get_local_service():
     return LocalLLMService
 
 
+def get_ollama_service():
+    """Get Ollama service (requires ollama extra)."""
+    from tether.llm.ollama import OllamaService
+    return OllamaService
+
+
 def get_mock_service():
     """Get mock service for testing."""
     from tether.llm.base import MockLLMService
