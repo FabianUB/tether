@@ -322,19 +322,114 @@ async def test_health_endpoint(app):
 
 ---
 
-## PR/Contribution Workflow
+## Version Control
 
-1. **Create a branch** from `main` with descriptive name
-2. **Write tests** for new functionality
-3. **Run checks** before committing:
+### Branching Strategy (GitHub Flow)
+
+We use GitHub Flow: `main` is always deployable, all work happens in feature branches.
+
+```
+main (protected)
+  │
+  ├── feature/streaming-support
+  ├── feature/ollama-provider
+  ├── fix/windows-path-issue
+  └── chore/update-dependencies
+```
+
+### Branch Naming
+
+Use prefixes to categorize branches:
+
+| Prefix | Purpose | Example |
+|--------|---------|---------|
+| `feature/` | New functionality | `feature/anthropic-provider` |
+| `fix/` | Bug fixes | `fix/sidecar-crash-on-close` |
+| `chore/` | Maintenance, CI, docs | `chore/update-ci-workflow` |
+| `refactor/` | Code restructuring | `refactor/llm-service-interface` |
+
+### Commit Messages (Conventional Commits)
+
+Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```
+<type>(<scope>): <description>
+
+[optional body]
+
+[optional footer]
+```
+
+**Types:**
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation only
+- `chore`: Maintenance (CI, deps, config)
+- `refactor`: Code change that neither fixes nor adds
+- `test`: Adding or updating tests
+
+**Scopes:** `cli`, `core`, `python`, `template`, `ci`, `docs`
+
+**Examples:**
+```
+feat(cli): add --template flag for project scaffolding
+fix(python): handle missing model file gracefully
+chore(ci): use PowerShell commands on Windows runners
+docs: update README with installation instructions
+```
+
+### Branch Protection Rules
+
+The `main` branch is protected:
+- Requires pull request before merging
+- Requires CI checks to pass
+- No direct pushes allowed
+
+### Pull Request Workflow
+
+1. **Create a branch** from `main`:
+   ```bash
+   git checkout main
+   git pull origin main
+   git checkout -b feature/my-feature
+   ```
+
+2. **Make changes** and commit with conventional commits
+
+3. **Push and create PR**:
+   ```bash
+   git push -u origin feature/my-feature
+   ```
+
+4. **Run checks locally** before requesting review:
    ```bash
    pnpm lint
    pnpm typecheck
    pnpm test
    ```
-4. **Keep PRs focused** - One feature or fix per PR
-5. **Update docs** if changing public API
-6. **Reference issues** in commit messages
+
+5. **PR requirements**:
+   - Descriptive title (conventional commit format)
+   - Link to related issue if applicable
+   - One feature or fix per PR
+   - Update docs if changing public API
+
+6. **After approval**, squash and merge to `main`
+
+### Releases
+
+Releases are tagged on `main`:
+
+```bash
+git tag -a v0.1.0 -m "Release v0.1.0"
+git push origin v0.1.0
+```
+
+Version format: `vMAJOR.MINOR.PATCH` (semver)
+
+- **MAJOR**: Breaking changes
+- **MINOR**: New features, backwards compatible
+- **PATCH**: Bug fixes, backwards compatible
 
 ---
 
