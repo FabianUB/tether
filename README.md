@@ -1,6 +1,6 @@
 # Tether
 
-An open-source framework for building AI/ML desktop applications using Tauri (Rust), React (TypeScript), and Python.
+A ready-to-use template for building AI/ML desktop applications. Includes FastAPI backend with LLM endpoints, React frontend with chat UI, and Tauri for desktop packaging.
 
 ## Core Principles
 

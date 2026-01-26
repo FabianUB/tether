@@ -6,7 +6,7 @@ Guidelines for Claude (and contributors) when working on the Tether codebase.
 
 ## Project Overview
 
-Tether is a framework for building AI/ML desktop applications using:
+Tether is a template for building AI/ML desktop applications using:
 - **Frontend**: React 18 + TypeScript + Vite
 - **Backend**: Python 3.11+ + FastAPI + uvicorn
 - **Desktop**: Tauri 2.x (Rust)

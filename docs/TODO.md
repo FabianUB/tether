@@ -39,12 +39,15 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ## Short-term
 
 ### Multimodal: Image Support
-- [ ] Add `images` parameter to chat API (base64 encoded)
-- [ ] Update OllamaService to pass images to API
-- [ ] Add image upload component (file picker, drag-drop, paste)
-- [ ] Image preview before sending
-- [ ] Update TypeScript types for image messages
+- [x] Add `images` parameter to chat API (base64 encoded)
+- [x] Update OllamaService to pass images to API
+- [x] Add image upload component (file picker)
+- [x] Image preview before sending
+- [x] Update TypeScript types for image messages
+- [x] Auto-disable thinking mode for vision requests
+- [x] Warning when using images with thinking enabled
 - [ ] Test with LLaVA and Llama 3.2 Vision models
+- [ ] Drag-drop and paste image support
 
 ### Streaming Support
 - [ ] Implement SSE endpoint in Python backend
@@ -81,6 +84,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Add video tutorials
 - [ ] Add troubleshooting guide
 - [ ] Document deployment process in detail
+
+### ML Endpoint Templates (CLI Selection)
+- [ ] Add endpoint selection to CLI (`create-tether-app`)
+- [ ] Image Classification template (PyTorch/TensorFlow)
+- [ ] Object Detection template (YOLO/ultralytics)
+- [ ] Tabular/Predictions template (scikit-learn)
+- [ ] Text Classification template (transformers)
+- [ ] Embeddings endpoint template (sentence-transformers)
 
 ### Examples
 - [ ] Create "Image Captioning" example app
