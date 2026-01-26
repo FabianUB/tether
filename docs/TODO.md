@@ -18,7 +18,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [x] Add Ollama support as LLM provider
 - [ ] Test llama-cpp-python on Windows and Linux
 - [ ] Add model validation (check GGUF format, file exists)
-- [ ] Better error messages when model fails to load
+- [x] Better error messages when model fails to load
 
 ### Publishing
 - [ ] Publish `create-tether-app` to npm
@@ -30,7 +30,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ### Polish
 - [ ] Add proper error handling with user-friendly messages
 - [ ] Generate app icons for template (macOS, Windows, Linux)
-- [ ] Add loading states for model initialization
+- [x] Add loading states for model initialization
 - [ ] Improve CLI output (progress indicators, colors)
 - [ ] Add `--verbose` flag to CLI for debugging
 
@@ -47,7 +47,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [x] Auto-disable thinking mode for vision requests
 - [x] Warning when using images with thinking enabled
 - [ ] Test with LLaVA and Llama 3.2 Vision models
-- [ ] Drag-drop and paste image support
+- [x] Drag-drop and paste image support
 
 ### Streaming Support
 - [ ] Implement SSE endpoint in Python backend

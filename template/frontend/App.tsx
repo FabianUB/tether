@@ -26,9 +26,25 @@ function App() {
           </div>
         )}
 
+        {status === 'loading-model' && (
+          <div className="loading">
+            <div className="spinner" />
+            <p>Loading model...</p>
+            <p className="loading-hint">This may take a moment for large models</p>
+          </div>
+        )}
+
+        {status === 'disconnected' && (
+          <div className="error disconnected">
+            <p>Connection lost</p>
+            <p className="error-detail">The backend is no longer responding</p>
+            <button onClick={retry}>Reconnect</button>
+          </div>
+        )}
+
         {status === 'error' && (
           <div className="error">
-            <p>Failed to connect to backend</p>
+            <p>Failed to connect</p>
             {error && <p className="error-detail">{error.message}</p>}
             <button onClick={retry}>Retry</button>
           </div>

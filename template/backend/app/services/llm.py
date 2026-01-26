@@ -190,11 +190,22 @@ async def discover_ollama(base_url: Optional[str] = None) -> OllamaDiscoveryResu
     except httpx.ConnectError:
         return OllamaDiscoveryResult(
             available=False, base_url=url, models=[],
-            error=f"Cannot connect to Ollama at {url}. Is it running?",
+            error=f"Cannot connect to Ollama at {url}. Make sure Ollama is running (run 'ollama serve' or start the Ollama app).",
+        )
+    except httpx.TimeoutException:
+        return OllamaDiscoveryResult(
+            available=False, base_url=url, models=[],
+            error=f"Connection to Ollama at {url} timed out. The server may be busy or unresponsive.",
+        )
+    except httpx.HTTPStatusError as e:
+        return OllamaDiscoveryResult(
+            available=False, base_url=url, models=[],
+            error=f"Ollama returned an error (HTTP {e.response.status_code}). Check if Ollama is working correctly.",
         )
     except Exception as e:
         return OllamaDiscoveryResult(
-            available=False, base_url=url, models=[], error=str(e),
+            available=False, base_url=url, models=[],
+            error=f"Unexpected error connecting to Ollama: {str(e)}",
         )
 
 
@@ -238,10 +249,8 @@ class OllamaService(LLMService):
             discovery = await discover_ollama(self._base_url)
 
             if not discovery.available:
-                raise RuntimeError(
-                    f"Cannot connect to Ollama at {self._base_url}. "
-                    "Make sure Ollama is running (run 'ollama serve')."
-                )
+                error_msg = discovery.error or f"Cannot connect to Ollama at {self._base_url}"
+                raise RuntimeError(error_msg)
 
             self._available_models = discovery.models
 
@@ -252,8 +261,9 @@ class OllamaService(LLMService):
                     print(f"Auto-selected Ollama model: {self._model}")
                 else:
                     raise RuntimeError(
-                        "No models available in Ollama. "
-                        "Pull a model first: ollama pull llama3.2"
+                        "No models found in Ollama. Pull a model first with:\n"
+                        "  ollama pull llama3.2\n"
+                        "Or visit https://ollama.com/library to browse available models."
                     )
             else:
                 # Verify model exists
@@ -261,15 +271,29 @@ class OllamaService(LLMService):
                     self._model == m or self._model == m.split(":")[0]
                     for m in self._available_models
                 )
-                if not model_found and self._available_models:
-                    print(
-                        f"Warning: Model '{self._model}' not found. "
-                        f"Available: {', '.join(self._available_models)}"
-                    )
+                if not model_found:
+                    available_str = ", ".join(self._available_models[:5])
+                    if len(self._available_models) > 5:
+                        available_str += f", ... ({len(self._available_models) - 5} more)"
+                    if self._available_models:
+                        print(
+                            f"Warning: Model '{self._model}' not found locally. "
+                            f"Available models: {available_str}. "
+                            f"Ollama will try to pull it automatically."
+                        )
+                    else:
+                        print(
+                            f"Warning: Model '{self._model}' specified but no models found. "
+                            f"Ollama will try to pull it automatically."
+                        )
 
             self._ready = True
         except ImportError:
-            raise ImportError("httpx package not installed")
+            raise ImportError(
+                "httpx package not installed. Install it with:\n"
+                "  pip install httpx\n"
+                "Or: uv add httpx"
+            )
 
     async def cleanup(self) -> None:
         if self._client:
@@ -380,27 +404,70 @@ class LocalLLMService(LLMService):
 
     async def initialize(self) -> None:
         if not self._model_path:
-            print("Warning: No model path specified. LLM service will not be available.")
-            return
+            raise RuntimeError(
+                "No model path specified. Set TETHER_MODEL_PATH environment variable "
+                "to the path of your GGUF model file.\n"
+                "Example: TETHER_MODEL_PATH=./models/llama-3.2-1b.gguf"
+            )
+
+        # Check if file exists
+        if not os.path.isfile(self._model_path):
+            raise RuntimeError(
+                f"Model file not found: {self._model_path}\n"
+                "Make sure the path is correct and the file exists.\n"
+                "You can download GGUF models from: https://huggingface.co/models?library=gguf"
+            )
+
+        # Check file extension
+        if not self._model_path.lower().endswith(".gguf"):
+            print(
+                f"Warning: Model file '{self._model_path}' doesn't have .gguf extension. "
+                "Make sure this is a valid GGUF model file."
+            )
 
         try:
             from llama_cpp import Llama
 
+            print(f"Loading model: {self._model_path}...")
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(None, self._load_model)
+            print(f"Model loaded successfully: {self.model_name}")
         except ImportError:
-            raise ImportError("llama-cpp-python package not installed")
+            raise ImportError(
+                "llama-cpp-python package not installed. Install it with:\n"
+                "  pip install llama-cpp-python\n"
+                "For GPU support, see: https://github.com/abetlen/llama-cpp-python#installation"
+            )
 
     def _load_model(self) -> None:
         from llama_cpp import Llama
 
-        self._llm = Llama(
-            model_path=self._model_path,
-            n_ctx=self._n_ctx,
-            n_gpu_layers=self._n_gpu_layers,
-            verbose=False,
-        )
-        self._ready = True
+        try:
+            self._llm = Llama(
+                model_path=self._model_path,
+                n_ctx=self._n_ctx,
+                n_gpu_layers=self._n_gpu_layers,
+                verbose=False,
+            )
+            self._ready = True
+        except Exception as e:
+            error_str = str(e).lower()
+            if "gguf" in error_str or "magic" in error_str:
+                raise RuntimeError(
+                    f"Invalid model file format: {self._model_path}\n"
+                    "This doesn't appear to be a valid GGUF file. "
+                    "Make sure you have a properly formatted GGUF model."
+                ) from e
+            elif "memory" in error_str or "alloc" in error_str:
+                raise RuntimeError(
+                    f"Not enough memory to load model: {self._model_path}\n"
+                    "Try a smaller/quantized model or close other applications."
+                ) from e
+            else:
+                raise RuntimeError(
+                    f"Failed to load model: {self._model_path}\n"
+                    f"Error: {str(e)}"
+                ) from e
 
     async def cleanup(self) -> None:
         self._llm = None

@@ -91,24 +91,23 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
 
     try:
         # Build messages list for chat API
+        # Note: We don't include images from history because:
+        # 1. Non-vision models can't handle them (Ollama converts to [img-0] placeholders)
+        # 2. Vision models typically can't "remember" images from earlier turns anyway
         messages = []
         if body.history:
             for msg in body.history:
-                msg_dict = {"role": msg.role, "content": msg.content}
-                if msg.images:
-                    msg_dict["images"] = msg.images
-                messages.append(msg_dict)
+                # Strip images from history - only text content
+                messages.append({"role": msg.role, "content": msg.content})
 
-        # Add current message with optional images
+        # Add current message with optional images (only current turn gets images)
         current_msg = {"role": "user", "content": body.message}
         if body.images:
             current_msg["images"] = body.images
         messages.append(current_msg)
 
-        # Check if any message has images (vision models don't support thinking)
-        has_images = body.images or any(
-            msg.images for msg in (body.history or []) if msg.images
-        )
+        # Check if current message has images (vision models don't support thinking)
+        has_images = bool(body.images)
         # Disable thinking for vision requests (not supported by Ollama)
         use_thinking = False if has_images else (body.think if body.think is not None else True)
 

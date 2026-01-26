@@ -7,6 +7,7 @@ export function Chat() {
   const [input, setInput] = useState('');
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [pendingImages, setPendingImages] = useState<string[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
@@ -18,25 +19,6 @@ export function Chat() {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
-
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
-
-    const newImages: string[] = [];
-    for (const file of Array.from(files)) {
-      if (file.type.startsWith('image/')) {
-        const base64 = await fileToBase64(file);
-        newImages.push(base64);
-      }
-    }
-    setPendingImages((prev) => [...prev, ...newImages]);
-
-    // Reset input so same file can be selected again
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -50,6 +32,89 @@ export function Chat() {
       reader.onerror = reject;
       reader.readAsDataURL(file);
     });
+  };
+
+  const processFiles = async (files: FileList | File[]) => {
+    const newImages: string[] = [];
+    for (const file of Array.from(files)) {
+      if (file.type.startsWith('image/')) {
+        const base64 = await fileToBase64(file);
+        newImages.push(base64);
+      }
+    }
+    if (newImages.length > 0) {
+      setPendingImages((prev) => [...prev, ...newImages]);
+    }
+  };
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    await processFiles(files);
+
+    // Reset input so same file can be selected again
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // Drag and drop handlers
+  const dragCounterRef = useRef(0);
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current++;
+    if (e.dataTransfer.types.includes('Files')) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current--;
+    if (dragCounterRef.current === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dragCounterRef.current = 0;
+    setIsDragging(false);
+
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      await processFiles(files);
+    }
+  };
+
+  // Paste handler
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    const imageFiles: File[] = [];
+
+    for (const item of Array.from(items)) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          imageFiles.push(file);
+        }
+      }
+    }
+
+    if (imageFiles.length > 0) {
+      e.preventDefault(); // Prevent pasting image as text
+      await processFiles(imageFiles);
+    }
   };
 
   const removeImage = (index: number) => {
@@ -73,7 +138,18 @@ export function Chat() {
   };
 
   return (
-    <div className="chat">
+    <div
+      className={`chat ${isDragging ? 'chat-dragging' : ''}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
+      {isDragging && (
+        <div className="drop-overlay">
+          <div className="drop-message">Drop images here</div>
+        </div>
+      )}
       <div className="chat-messages">
         {messages.length === 0 && (
           <div className="chat-empty">
@@ -155,6 +231,7 @@ export function Chat() {
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onPaste={handlePaste}
             placeholder="Type a message..."
             disabled={isLoading}
             className="chat-input"

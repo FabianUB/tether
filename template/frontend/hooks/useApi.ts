@@ -49,13 +49,14 @@ export interface SwitchModelResponse {
   message: string;
 }
 
-export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+export type ConnectionStatus = 'connecting' | 'loading-model' | 'connected' | 'disconnected' | 'error';
 
 // Configuration
 let API_URL = 'http://127.0.0.1:8000';
 const MAX_RETRIES = 30;
 const RETRY_DELAY = 1000;
 const REQUEST_TIMEOUT = 120000; // 2 minutes for thinking models
+const HEALTH_CHECK_INTERVAL = 10000; // Check health every 10 seconds
 
 // Get the API port from Tauri
 async function getApiUrl(): Promise<string> {
@@ -144,6 +145,7 @@ export function useBackendStatus() {
 
   useEffect(() => {
     let mounted = true;
+    let healthCheckInterval: ReturnType<typeof setInterval> | null = null;
 
     const connect = async () => {
       setStatus('connecting');
@@ -154,6 +156,9 @@ export function useBackendStatus() {
         if (!mounted) return;
 
         if (ready) {
+          // Backend is reachable, now check model status
+          setStatus('loading-model');
+
           const [healthData, modelsData] = await Promise.all([
             checkHealth(),
             fetchModels().catch(() => null),
@@ -161,10 +166,36 @@ export function useBackendStatus() {
           if (!mounted) return;
           setHealth(healthData);
           setModelInfo(modelsData);
-          setStatus('connected');
+
+          // Check if model is loaded
+          if (healthData.model_loaded) {
+            setStatus('connected');
+          } else if (modelsData?.error) {
+            setStatus('error');
+            setError(new Error(modelsData.error));
+          } else {
+            // Model not loaded but no error - still connected
+            setStatus('connected');
+          }
+
+          // Start periodic health checks
+          healthCheckInterval = setInterval(async () => {
+            if (!mounted) return;
+            try {
+              const healthData = await checkHealth();
+              if (!mounted) return;
+              setHealth(healthData);
+              // If we were disconnected but now healthy, reconnect
+              setStatus((prev) => prev === 'disconnected' ? 'connected' : prev);
+            } catch {
+              if (!mounted) return;
+              setStatus('disconnected');
+              setError(new Error('Lost connection to backend'));
+            }
+          }, HEALTH_CHECK_INTERVAL);
         } else {
           setStatus('error');
-          setError(new Error('Backend failed to become healthy'));
+          setError(new Error('Backend failed to start. Check terminal for errors.'));
         }
       } catch (err) {
         if (!mounted) return;
@@ -177,6 +208,9 @@ export function useBackendStatus() {
 
     return () => {
       mounted = false;
+      if (healthCheckInterval) {
+        clearInterval(healthCheckInterval);
+      }
     };
   }, []);
 
