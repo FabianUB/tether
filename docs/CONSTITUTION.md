@@ -64,40 +64,55 @@ Tether doesn't manage model discovery or downloads. Users bring their own GGUF f
 
 ---
 
-## Plugin Ecosystem: AI Accountability
+## AI Observability, Guardrails & Ecosystem
 
 Tether's core mission is simple: **make it easy to build AI/ML desktop apps**. The framework itself stays minimal and unopinionated.
 
-However, we believe building *trustworthy* AI applications matters. Rather than baking accountability features into the core, Tether will provide a plugin ecosystem that lets developers opt into these capabilities when needed.
+However, we believe building *trustworthy* AI applications matters. Rather than reinventing the wheel, Tether aims to integrate seamlessly with the best existing tools in the ecosystem.
 
-### Guiding Principles
+### Observability Tools
 
-The plugin ecosystem is designed around four questions every AI application should be able to answer:
+We prioritize compatibility with established LLM observability libraries:
 
-| Principle | Question | What plugins provide |
-|-----------|----------|---------------------|
-| **Ownership** | Who's responsible? | Audit trails, permission scopes, attribution |
-| **Traceability** | Where did this come from? | Correlation IDs, prompt history, source tracking |
-| **Observability** | What's happening inside? | Metrics, logging, token usage dashboards |
-| **Verifiability** | Does it do what we expect? | Testing utilities, output validation, regression tests |
+| Tool | Type | Why it matters |
+|------|------|----------------|
+| **[Arize Phoenix](https://github.com/Arize-ai/phoenix)** | Open-source | OpenTelemetry-native, vendor-agnostic tracing and evals |
+| **[Langfuse](https://langfuse.com)** | Open-source (MIT) | Tracing, prompt management, cost tracking |
+| **[OpenLLMetry](https://github.com/traceloop/openllmetry)** | Open-source (Apache 2.0) | OpenTelemetry instrumentation for LLMs |
+| **[Opik](https://github.com/comet-ml/opik)** | Open-source (Apache 2.0) | Tracing and evaluation |
+| **[LangSmith](https://smith.langchain.com)** | Proprietary | Deep LangChain integration |
+| **[Weights & Biases](https://wandb.ai)** | Proprietary | Experiment tracking and evals |
 
-### Planned Plugins
+### Guardrails & Safety
 
-```
-@tether/plugin-tracing       # Correlation IDs, request logging
-@tether/plugin-metrics       # Token usage, latency, cost tracking
-@tether/plugin-audit         # Audit trails, permission logs
-tether-plugin-observability  # Python-side metrics and logging
-```
+For input/output validation, content safety, and structured outputs:
 
-### What the Core Provides
+| Tool | Type | Why it matters |
+|------|------|----------------|
+| **[Guardrails AI](https://github.com/guardrails-ai/guardrails)** | Open-source | Structured output validation, risk detection, Pydantic integration |
+| **[NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails)** | Open-source (NVIDIA) | Programmable conversation flows, content moderation, jailbreak detection |
+| **[Presidio](https://github.com/microsoft/presidio)** | Open-source (Microsoft) | PII detection and anonymization |
 
-The core framework only provides the hooks for plugins to attach:
-- **Middleware points** — Request lifecycle, LLM calls, responses
-- **Standard interfaces** — Common types for logging, metrics, tracing
-- **Context propagation** — Pass metadata through the stack
+### Framework Compatibility
 
-A hobby chat app uses none of these. An enterprise healthcare AI uses all of them. Same framework, different plugins. **You only pay for what you use.**
+Tether aims to work well with popular LLM frameworks, enabling developers to use their preferred tools:
+
+| Framework | Focus | Integration goal |
+|-----------|-------|------------------|
+| **[LangChain](https://langchain.com)** | Chains, agents, RAG | Use LangChain components within Tether's LLM service layer |
+| **[DSPy](https://github.com/stanfordnlp/dspy)** | Programmatic prompting, optimization | Support DSPy modules as LLM backends |
+| **[LlamaIndex](https://llamaindex.ai)** | Data indexing, RAG | Integrate retrieval pipelines with Tether apps |
+
+### Design Principles
+
+Rather than building custom solutions, Tether will:
+
+1. **Support OpenTelemetry** — Standard tracing format that works with Phoenix, Langfuse, and others
+2. **Expose middleware hooks** — Let observability and guardrail tools instrument the request lifecycle
+3. **Propagate context** — Pass correlation IDs and metadata through the stack
+4. **Stay out of the way** — A hobby chat app uses none of this; an enterprise app plugs in what it needs
+
+**You bring your preferred tools. Tether just makes sure they work.**
 
 ---
 
