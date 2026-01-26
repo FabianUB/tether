@@ -126,3 +126,61 @@
   border: none;
   border-top: 1px solid var(--color-border);
 }
+
+/* Thinking section for thinking models (e.g., Qwen3) */
+.message-thinking {
+  margin-bottom: 0.5rem;
+  border-radius: 6px;
+  background: rgba(147, 51, 234, 0.08);
+  border: 1px solid rgba(147, 51, 234, 0.2);
+  overflow: hidden;
+}
+
+.thinking-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  background: none;
+  border: none;
+  color: rgb(147, 51, 234);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s;
+}
+
+.thinking-toggle:hover {
+  background: rgba(147, 51, 234, 0.05);
+}
+
+.thinking-chevron {
+  font-size: 0.625rem;
+  transition: transform 0.15s;
+}
+
+.thinking-chevron.expanded {
+  transform: rotate(0deg);
+}
+
+.thinking-content {
+  padding: 0 0.75rem 0.75rem 0.75rem;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  border-top: 1px solid rgba(147, 51, 234, 0.15);
+}
+
+.thinking-content p {
+  margin: 0.375rem 0;
+}
+
+.thinking-content p:first-child {
+  margin-top: 0.5rem;
+}
+
+.thinking-content p:last-child {
+  margin-bottom: 0;
+}

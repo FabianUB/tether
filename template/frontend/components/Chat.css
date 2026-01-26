@@ -68,6 +68,38 @@
   flex: 1;
 }
 
+.chat-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.thinking-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  user-select: none;
+}
+
+.thinking-toggle input[type="checkbox"] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: rgb(147, 51, 234);
+  cursor: pointer;
+}
+
+.thinking-toggle:hover {
+  color: var(--color-text);
+}
+
+.toggle-label {
+  font-weight: 500;
+}
+
 .clear-button {
   background-color: transparent;
   color: var(--color-text-muted);

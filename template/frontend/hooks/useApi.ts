@@ -5,6 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  thinking?: string;
   timestamp?: number;
 }
 
@@ -14,10 +15,12 @@ export interface ChatRequest {
   model?: string;
   temperature?: number;
   max_tokens?: number;
+  think?: boolean;
 }
 
 export interface ChatResponse {
   response: string;
+  thinking?: string;
   tokens_used?: number;
   model?: string;
   finish_reason?: 'stop' | 'length' | 'error';
@@ -50,7 +53,7 @@ export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'er
 let API_URL = 'http://127.0.0.1:8000';
 const MAX_RETRIES = 30;
 const RETRY_DELAY = 1000;
-const REQUEST_TIMEOUT = 30000;
+const REQUEST_TIMEOUT = 120000; // 2 minutes for thinking models
 
 // Get the API port from Tauri
 async function getApiUrl(): Promise<string> {
@@ -243,6 +246,7 @@ export function useChat() {
         const assistantMessage: ChatMessage = {
           role: 'assistant',
           content: response.response,
+          thinking: response.thinking,
           timestamp: Date.now(),
         };
 

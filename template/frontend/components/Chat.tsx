@@ -5,6 +5,7 @@ import './Chat.css';
 
 export function Chat() {
   const [input, setInput] = useState('');
+  const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
 
@@ -24,7 +25,7 @@ export function Chat() {
     setInput('');
 
     try {
-      await sendMessage(message);
+      await sendMessage(message, { think: thinkingEnabled });
     } catch {
       // Error is already handled in the hook
     }
@@ -76,15 +77,26 @@ export function Chat() {
             Send
           </button>
         </div>
-        {messages.length > 0 && (
-          <button
-            type="button"
-            onClick={clearMessages}
-            className="clear-button"
-          >
-            Clear Chat
-          </button>
-        )}
+        <div className="chat-options">
+          <label className="thinking-toggle">
+            <input
+              type="checkbox"
+              checked={thinkingEnabled}
+              onChange={(e) => setThinkingEnabled(e.target.checked)}
+              disabled={isLoading}
+            />
+            <span className="toggle-label">Thinking (supported models)</span>
+          </label>
+          {messages.length > 0 && (
+            <button
+              type="button"
+              onClick={clearMessages}
+              className="clear-button"
+            >
+              Clear Chat
+            </button>
+          )}
+        </div>
       </form>
     </div>
   );

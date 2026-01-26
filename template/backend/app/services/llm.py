@@ -309,6 +309,50 @@ class OllamaService(LLMService):
         response.raise_for_status()
         return response.json().get("response", "")
 
+    async def chat(
+        self,
+        messages: list[dict],
+        *,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        think: bool = True,
+    ) -> dict:
+        """
+        Chat completion using Ollama's chat API.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content'
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+            think: Enable thinking mode for reasoning models (default: True)
+
+        Returns:
+            Dict with 'content' and optionally 'thinking' keys
+        """
+        if not self._client:
+            raise RuntimeError("Ollama client not initialized")
+
+        payload = {
+            "model": self._model,
+            "messages": messages,
+            "stream": False,
+            "think": think,  # Enable thinking mode
+            "options": {"temperature": temperature},
+        }
+        if max_tokens:
+            payload["options"]["num_predict"] = max_tokens
+
+        response = await self._client.post("/api/chat", json=payload)
+        response.raise_for_status()
+
+        data = response.json()
+        message = data.get("message", {})
+
+        return {
+            "content": message.get("content", ""),
+            "thinking": message.get("thinking"),  # None if not a thinking model
+        }
+
 
 class LocalLLMService(LLMService):
     """Local LLM service using llama-cpp-python."""
