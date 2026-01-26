@@ -6,7 +6,7 @@ export interface PromptOptions {
 
 export interface PromptAnswers {
   projectName: string;
-  template: 'local-llm' | 'openai' | 'custom';
+  template: 'local-llm' | 'ollama' | 'openai' | 'custom';
   includeExample: boolean;
 }
 
@@ -41,7 +41,11 @@ export async function promptForOptions(
       message: 'Select ML backend:',
       choices: [
         {
-          name: 'Local LLM (llama-cpp-python) - Run models locally',
+          name: 'Ollama - Run models locally via Ollama (Recommended)',
+          value: 'ollama',
+        },
+        {
+          name: 'Local LLM (llama-cpp-python) - Embed models directly',
           value: 'local-llm',
         },
         {
@@ -53,7 +57,7 @@ export async function promptForOptions(
           value: 'custom',
         },
       ],
-      default: 'local-llm',
+      default: 'ollama',
     },
     {
       type: 'confirm',
@@ -67,7 +71,7 @@ export async function promptForOptions(
 
   return {
     projectName: answers.projectName || '',
-    template: answers.template || 'local-llm',
+    template: answers.template || 'ollama',
     includeExample: answers.includeExample ?? true,
   };
 }

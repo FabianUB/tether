@@ -15,10 +15,10 @@ Actionable roadmap with priorities. Check off items as they're completed.
 
 ### Local Model Support
 - [ ] Fix local model provider detection (auto-detect GGUF files)
-- [ ] Add Ollama support as LLM provider
+- [x] Add Ollama support as LLM provider
 - [ ] Test llama-cpp-python on Windows and Linux
 - [ ] Add model validation (check GGUF format, file exists)
-- [ ] Better error messages when model fails to load
+- [x] Better error messages when model fails to load
 
 ### Publishing
 - [ ] Publish `create-tether-app` to npm
@@ -30,13 +30,24 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ### Polish
 - [ ] Add proper error handling with user-friendly messages
 - [ ] Generate app icons for template (macOS, Windows, Linux)
-- [ ] Add loading states for model initialization
+- [x] Add loading states for model initialization
 - [ ] Improve CLI output (progress indicators, colors)
 - [ ] Add `--verbose` flag to CLI for debugging
 
 ---
 
 ## Short-term
+
+### Multimodal: Image Support
+- [x] Add `images` parameter to chat API (base64 encoded)
+- [x] Update OllamaService to pass images to API
+- [x] Add image upload component (file picker)
+- [x] Image preview before sending
+- [x] Update TypeScript types for image messages
+- [x] Auto-disable thinking mode for vision requests
+- [x] Warning when using images with thinking enabled
+- [ ] Test with LLaVA and Llama 3.2 Vision models
+- [x] Drag-drop and paste image support
 
 ### Streaming Support
 - [ ] Implement SSE endpoint in Python backend
@@ -52,6 +63,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Handle Anthropic-specific parameters
 - [ ] Add to template as provider option
 
+### Model Workflows
+- [x] Add model switching endpoint (`POST /models/switch`)
+- [x] Add model selector dropdown in frontend
+- [ ] Multi-model pool (keep multiple models loaded)
+- [ ] Per-request model selection (use `model` field in chat requests)
+- [ ] Model routing based on task type
+- [ ] Model presets/profiles
+
 ### UX Improvements
 - [ ] Better model download/management UX
 - [ ] Add system tray support (optional)
@@ -65,6 +84,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Add video tutorials
 - [ ] Add troubleshooting guide
 - [ ] Document deployment process in detail
+
+### ML Endpoint Templates (CLI Selection)
+- [ ] Add endpoint selection to CLI (`create-tether-app`)
+- [ ] Image Classification template (PyTorch/TensorFlow)
+- [ ] Object Detection template (YOLO/ultralytics)
+- [ ] Tabular/Predictions template (scikit-learn)
+- [ ] Text Classification template (transformers)
+- [ ] Embeddings endpoint template (sentence-transformers)
 
 ### Examples
 - [ ] Create "Image Captioning" example app
@@ -103,10 +130,16 @@ See "Plugin System & Accountability" section above for detailed plugin roadmap.
 - [ ] Request/response inspector
 - [ ] Performance profiling
 
+### Multimodal: Audio & Video
+- [ ] Audio input with Whisper transcription
+- [ ] Voice output (text-to-speech)
+- [ ] Real-time audio streaming
+- [ ] Video frame extraction for vision models
+- [ ] Screen sharing / screenshot input
+
 ### Advanced Features
 - [ ] Multi-model chat (compare responses side-by-side)
 - [ ] Function calling / tool use support
-- [ ] Voice input/output integration
 - [ ] Image generation support (Stable Diffusion)
 - [ ] Fine-tuning workflow integration
 

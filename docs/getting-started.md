@@ -1,6 +1,6 @@
 # Getting Started with Tether
 
-Tether is a framework for building AI/ML desktop applications using Tauri, React, and Python. This guide will help you create your first Tether app.
+Tether is a template for building AI/ML desktop applications using Tauri, React, and Python. This guide will help you create your first Tether app.
 
 ## Prerequisites
 

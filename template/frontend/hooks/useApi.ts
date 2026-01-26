@@ -5,19 +5,24 @@ import { invoke } from '@tauri-apps/api/core';
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  images?: string[];
+  thinking?: string;
   timestamp?: number;
 }
 
 export interface ChatRequest {
   message: string;
+  images?: string[];
   history?: ChatMessage[];
   model?: string;
   temperature?: number;
   max_tokens?: number;
+  think?: boolean;
 }
 
 export interface ChatResponse {
   response: string;
+  thinking?: string;
   tokens_used?: number;
   model?: string;
   finish_reason?: 'stop' | 'length' | 'error';
@@ -29,13 +34,29 @@ export interface HealthResponse {
   version: string;
 }
 
-export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
+export interface ModelsResponse {
+  available: boolean;
+  current_model: string | null;
+  models: string[];
+  backend: string;
+  error: string | null;
+}
+
+export interface SwitchModelResponse {
+  success: boolean;
+  previous_model: string | null;
+  current_model: string;
+  message: string;
+}
+
+export type ConnectionStatus = 'connecting' | 'loading-model' | 'connected' | 'disconnected' | 'error';
 
 // Configuration
 let API_URL = 'http://127.0.0.1:8000';
 const MAX_RETRIES = 30;
 const RETRY_DELAY = 1000;
-const REQUEST_TIMEOUT = 30000;
+const REQUEST_TIMEOUT = 120000; // 2 minutes for thinking models
+const HEALTH_CHECK_INTERVAL = 10000; // Check health every 10 seconds
 
 // Get the API port from Tauri
 async function getApiUrl(): Promise<string> {
@@ -79,6 +100,17 @@ async function checkHealth(): Promise<HealthResponse> {
   return apiFetch<HealthResponse>('/health');
 }
 
+async function fetchModels(): Promise<ModelsResponse> {
+  return apiFetch<ModelsResponse>('/models');
+}
+
+async function switchModel(model: string): Promise<SwitchModelResponse> {
+  return apiFetch<SwitchModelResponse>('/models/switch', {
+    method: 'POST',
+    body: JSON.stringify({ model }),
+  });
+}
+
 async function waitForBackend(): Promise<boolean> {
   // First, get the correct API URL from Tauri
   await getApiUrl();
@@ -108,10 +140,12 @@ async function sendChatRequest(request: ChatRequest): Promise<ChatResponse> {
 export function useBackendStatus() {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [modelInfo, setModelInfo] = useState<ModelsResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    let healthCheckInterval: ReturnType<typeof setInterval> | null = null;
 
     const connect = async () => {
       setStatus('connecting');
@@ -122,13 +156,46 @@ export function useBackendStatus() {
         if (!mounted) return;
 
         if (ready) {
-          const healthData = await checkHealth();
+          // Backend is reachable, now check model status
+          setStatus('loading-model');
+
+          const [healthData, modelsData] = await Promise.all([
+            checkHealth(),
+            fetchModels().catch(() => null),
+          ]);
           if (!mounted) return;
           setHealth(healthData);
-          setStatus('connected');
+          setModelInfo(modelsData);
+
+          // Check if model is loaded
+          if (healthData.model_loaded) {
+            setStatus('connected');
+          } else if (modelsData?.error) {
+            setStatus('error');
+            setError(new Error(modelsData.error));
+          } else {
+            // Model not loaded but no error - still connected
+            setStatus('connected');
+          }
+
+          // Start periodic health checks
+          healthCheckInterval = setInterval(async () => {
+            if (!mounted) return;
+            try {
+              const healthData = await checkHealth();
+              if (!mounted) return;
+              setHealth(healthData);
+              // If we were disconnected but now healthy, reconnect
+              setStatus((prev) => prev === 'disconnected' ? 'connected' : prev);
+            } catch {
+              if (!mounted) return;
+              setStatus('disconnected');
+              setError(new Error('Lost connection to backend'));
+            }
+          }, HEALTH_CHECK_INTERVAL);
         } else {
           setStatus('error');
-          setError(new Error('Backend failed to become healthy'));
+          setError(new Error('Backend failed to start. Check terminal for errors.'));
         }
       } catch (err) {
         if (!mounted) return;
@@ -141,6 +208,9 @@ export function useBackendStatus() {
 
     return () => {
       mounted = false;
+      if (healthCheckInterval) {
+        clearInterval(healthCheckInterval);
+      }
     };
   }, []);
 
@@ -151,8 +221,12 @@ export function useBackendStatus() {
     try {
       const ready = await waitForBackend();
       if (ready) {
-        const healthData = await checkHealth();
+        const [healthData, modelsData] = await Promise.all([
+          checkHealth(),
+          fetchModels().catch(() => null),
+        ]);
         setHealth(healthData);
+        setModelInfo(modelsData);
         setStatus('connected');
       } else {
         setStatus('error');
@@ -164,7 +238,21 @@ export function useBackendStatus() {
     }
   }, []);
 
-  return { status, health, error, retry };
+  const changeModel = useCallback(async (model: string) => {
+    try {
+      const result = await switchModel(model);
+      if (result.success) {
+        // Refresh model info
+        const modelsData = await fetchModels().catch(() => null);
+        setModelInfo(modelsData);
+      }
+      return result;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to switch model');
+    }
+  }, []);
+
+  return { status, health, modelInfo, error, retry, changeModel };
 }
 
 export function useChat() {
@@ -177,6 +265,7 @@ export function useChat() {
       const userMessage: ChatMessage = {
         role: 'user',
         content,
+        images: options?.images,
         timestamp: Date.now(),
       };
 
@@ -187,6 +276,7 @@ export function useChat() {
       try {
         const response = await sendChatRequest({
           message: content,
+          images: options?.images,
           history: messages,
           ...options,
         });
@@ -194,6 +284,7 @@ export function useChat() {
         const assistantMessage: ChatMessage = {
           role: 'assistant',
           content: response.response,
+          thinking: response.thinking,
           timestamp: Date.now(),
         };
 

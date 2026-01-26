@@ -22,8 +22,8 @@ End users should receive a single installer (`.dmg`, `.exe`, `.AppImage`) that w
 
 ## What Tether IS
 
-### A framework for AI/ML desktop applications
-Tether provides the plumbing to connect a React frontend to a Python backend running local or remote LLMs, all packaged as a desktop app.
+### A template for AI/ML desktop applications
+Tether provides a ready-to-use starting point with a React frontend, FastAPI backend with LLM endpoints, and Tauri for desktop packaging. Clone, customize, and build.
 
 ### A scaffolding tool
 `create-tether-app` generates a working project structure with sensible defaults, so developers can start building features immediately instead of configuring build systems.
@@ -48,7 +48,7 @@ Tether handles the complexity of:
 ## What Tether is NOT (Anti-Goals)
 
 ### Not a full IDE or development environment
-Tether is a framework, not an editor. Use your preferred IDE (VS Code, PyCharm, etc.).
+Tether is a template, not an editor. Use your preferred IDE (VS Code, PyCharm, etc.).
 
 ### Not a model training framework
 Tether is for inference, not training. Use PyTorch, TensorFlow, or MLX for model development. Tether helps you deploy trained models in desktop apps.
@@ -64,53 +64,48 @@ Tether doesn't manage model discovery or downloads. Users bring their own GGUF f
 
 ---
 
-## AI Observability, Guardrails & Ecosystem
+## Included FastAPI Endpoints
 
-Tether's core mission is simple: **make it easy to build AI/ML desktop apps**. The framework itself stays minimal and unopinionated.
+The template includes ready-to-use API endpoints following best practices:
 
-However, we believe building *trustworthy* AI applications matters. Rather than reinventing the wheel, Tether aims to integrate seamlessly with the best existing tools in the ecosystem.
+### Health & Status
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check with model status |
+| `/models` | GET | List available models |
+| `/models/switch` | POST | Switch active model |
 
-### Observability Tools
+### Chat & Inference
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/chat` | POST | Chat completion with history |
 
-We prioritize compatibility with established LLM observability libraries:
+### Request/Response Patterns
+- **Pydantic models** for request validation and response typing
+- **Async handlers** for non-blocking LLM calls
+- **Error handling** with proper HTTP status codes
+- **CORS middleware** configured for frontend communication
 
-| Tool | Type | Why it matters |
-|------|------|----------------|
-| **[Arize Phoenix](https://github.com/Arize-ai/phoenix)** | Open-source | OpenTelemetry-native, vendor-agnostic tracing and evals |
-| **[Langfuse](https://langfuse.com)** | Open-source (MIT) | Tracing, prompt management, cost tracking |
-| **[OpenLLMetry](https://github.com/traceloop/openllmetry)** | Open-source (Apache 2.0) | OpenTelemetry instrumentation for LLMs |
-| **[Opik](https://github.com/comet-ml/opik)** | Open-source (Apache 2.0) | Tracing and evaluation |
-| **[LangSmith](https://smith.langchain.com)** | Proprietary | Deep LangChain integration |
-| **[Weights & Biases](https://wandb.ai)** | Proprietary | Experiment tracking and evals |
+### Extending the API
+Add your own endpoints in `backend/app/routes/`. The template demonstrates:
+- How to access the LLM service via `request.app.state`
+- Proper typing with `Optional`, `Literal`, etc.
+- Field validation with Pydantic `Field()`
+
+---
+
+## Ecosystem Compatibility
+
+Tether aims to integrate with the best existing tools rather than reinventing the wheel:
+
+### Observability
+Compatible with OpenTelemetry-based tools like [Arize Phoenix](https://github.com/Arize-ai/phoenix), [Langfuse](https://langfuse.com), and [OpenLLMetry](https://github.com/traceloop/openllmetry).
 
 ### Guardrails & Safety
+Works with [Guardrails AI](https://github.com/guardrails-ai/guardrails), [NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails), and [Presidio](https://github.com/microsoft/presidio) for input/output validation.
 
-For input/output validation, content safety, and structured outputs:
-
-| Tool | Type | Why it matters |
-|------|------|----------------|
-| **[Guardrails AI](https://github.com/guardrails-ai/guardrails)** | Open-source | Structured output validation, risk detection, Pydantic integration |
-| **[NeMo Guardrails](https://github.com/NVIDIA/NeMo-Guardrails)** | Open-source (NVIDIA) | Programmable conversation flows, content moderation, jailbreak detection |
-| **[Presidio](https://github.com/microsoft/presidio)** | Open-source (Microsoft) | PII detection and anonymization |
-
-### Framework Compatibility
-
-Tether aims to work well with popular LLM frameworks, enabling developers to use their preferred tools:
-
-| Framework | Focus | Integration goal |
-|-----------|-------|------------------|
-| **[LangChain](https://langchain.com)** | Chains, agents, RAG | Use LangChain components within Tether's LLM service layer |
-| **[DSPy](https://github.com/stanfordnlp/dspy)** | Programmatic prompting, optimization | Support DSPy modules as LLM backends |
-| **[LlamaIndex](https://llamaindex.ai)** | Data indexing, RAG | Integrate retrieval pipelines with Tether apps |
-
-### Design Principles
-
-Rather than building custom solutions, Tether will:
-
-1. **Support OpenTelemetry** — Standard tracing format that works with Phoenix, Langfuse, and others
-2. **Expose middleware hooks** — Let observability and guardrail tools instrument the request lifecycle
-3. **Propagate context** — Pass correlation IDs and metadata through the stack
-4. **Stay out of the way** — A hobby chat app uses none of this; an enterprise app plugs in what it needs
+### Frameworks
+Supports integration with [LangChain](https://langchain.com), [DSPy](https://github.com/stanfordnlp/dspy), and [LlamaIndex](https://llamaindex.ai).
 
 **You bring your preferred tools. Tether just makes sure they work.**
 

@@ -12,7 +12,7 @@ import {
 
 export interface ScaffoldOptions {
   projectName: string;
-  template: 'local-llm' | 'openai' | 'custom';
+  template: 'local-llm' | 'ollama' | 'openai' | 'custom';
   includeExample: boolean;
   skipInstall: boolean;
   packageManager: 'pnpm' | 'npm' | 'yarn';
@@ -116,7 +116,11 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
   console.log(chalk.cyan('    pnpm build'));
   console.log();
 
-  if (options.template === 'local-llm') {
+  if (options.template === 'ollama') {
+    console.log(chalk.dim('  Note: Make sure Ollama is running (ollama serve).'));
+    console.log(chalk.dim('  Pull a model with: ollama pull llama3.2'));
+    console.log();
+  } else if (options.template === 'local-llm') {
     console.log(chalk.dim('  Note: For local LLM support, you\'ll need to download a model.'));
     console.log(chalk.dim('  See the README.md in your project for instructions.'));
     console.log();
@@ -143,13 +147,17 @@ async function customizeForTemplate(
   if (await fs.pathExists(pyprojectPath)) {
     let content = await fs.readFile(pyprojectPath, 'utf-8');
 
-    if (options.template === 'openai') {
+    if (options.template === 'ollama') {
+      // Remove llama-cpp-python, keep httpx for ollama
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, '');
+      content = content.replace(/^\s*"openai[^"]*",?\n/gm, '');
+    } else if (options.template === 'openai') {
       // Remove llama-cpp-python, keep openai
-      content = content.replace(/llama-cpp-python[^\n]*\n?/g, '');
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, '');
     } else if (options.template === 'custom') {
-      // Remove both LLM dependencies
-      content = content.replace(/llama-cpp-python[^\n]*\n?/g, '');
-      content = content.replace(/openai[^\n]*\n?/g, '');
+      // Remove all LLM dependencies
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, '');
+      content = content.replace(/^\s*"openai[^"]*",?\n/gm, '');
     }
 
     await fs.writeFile(pyprojectPath, content);
@@ -159,16 +167,15 @@ async function customizeForTemplate(
   if (await fs.pathExists(pythonServicePath)) {
     let content = await fs.readFile(pythonServicePath, 'utf-8');
 
-    if (options.template === 'openai') {
-      content = content.replace(
-        /DEFAULT_SERVICE\s*=\s*["']local["']/,
-        'DEFAULT_SERVICE = "openai"'
-      );
+    // The template uses: tether_llm_backend: Literal[...] = "local"
+    const backendRegex = /(tether_llm_backend:\s*Literal\[[^\]]+\]\s*=\s*)["']local["']/;
+
+    if (options.template === 'ollama') {
+      content = content.replace(backendRegex, '$1"ollama"');
+    } else if (options.template === 'openai') {
+      content = content.replace(backendRegex, '$1"openai"');
     } else if (options.template === 'custom') {
-      content = content.replace(
-        /DEFAULT_SERVICE\s*=\s*["']local["']/,
-        'DEFAULT_SERVICE = "mock"'
-      );
+      content = content.replace(backendRegex, '$1"mock"');
     }
 
     await fs.writeFile(pythonServicePath, content);
