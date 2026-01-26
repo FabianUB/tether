@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:all": "pnpm python:build && pnpm build",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",

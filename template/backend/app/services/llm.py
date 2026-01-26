@@ -3,11 +3,33 @@ LLM service abstraction.
 """
 
 import asyncio
+import os
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Literal, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def get_ollama_base_url() -> str:
+    """Get Ollama base URL from OLLAMA_HOST env var or default."""
+    ollama_host = os.environ.get("OLLAMA_HOST")
+    if ollama_host:
+        if not ollama_host.startswith("http"):
+            ollama_host = f"http://{ollama_host}"
+        return ollama_host.rstrip("/")
+    return "http://localhost:11434"
+
+
+@dataclass
+class OllamaDiscoveryResult:
+    """Result of Ollama discovery."""
+
+    available: bool
+    base_url: str
+    models: list[str]
+    error: Optional[str] = None
 
 
 class LLMSettings(BaseSettings):
@@ -24,9 +46,9 @@ class LLMSettings(BaseSettings):
     openai_api_key: Optional[str] = None
     tether_openai_model: str = "gpt-4o-mini"
     tether_context_length: int = 4096
-    # Ollama settings
-    tether_ollama_model: str = "llama3.2"
-    tether_ollama_base_url: str = "http://localhost:11434"
+    # Ollama settings - model can be empty to auto-select
+    tether_ollama_model: Optional[str] = None
+    tether_ollama_base_url: Optional[str] = None  # Uses OLLAMA_HOST or default
 
 
 @lru_cache
@@ -152,6 +174,30 @@ class OpenAIService(LLMService):
         return response.choices[0].message.content or ""
 
 
+async def discover_ollama(base_url: Optional[str] = None) -> OllamaDiscoveryResult:
+    """Discover Ollama instance and available models."""
+    import httpx
+
+    url = base_url or get_ollama_base_url()
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.get(f"{url}/api/tags")
+            response.raise_for_status()
+            tags = response.json()
+            models = [m["name"] for m in tags.get("models", [])]
+            return OllamaDiscoveryResult(available=True, base_url=url, models=models)
+    except httpx.ConnectError:
+        return OllamaDiscoveryResult(
+            available=False, base_url=url, models=[],
+            error=f"Cannot connect to Ollama at {url}. Is it running?",
+        )
+    except Exception as e:
+        return OllamaDiscoveryResult(
+            available=False, base_url=url, models=[], error=str(e),
+        )
+
+
 class OllamaService(LLMService):
     """Ollama LLM service."""
 
@@ -163,14 +209,21 @@ class OllamaService(LLMService):
         base_url: Optional[str] = None,
     ):
         settings = get_settings()
-        self._model = model or settings.tether_ollama_model
-        self._base_url = (base_url or settings.tether_ollama_base_url).rstrip("/")
+        self._model = model or settings.tether_ollama_model  # Can be None
+        base = base_url or settings.tether_ollama_base_url
+        self._base_url = (base or get_ollama_base_url()).rstrip("/")
         self._client = None
         self._ready = False
+        self._available_models: list[str] = []
 
     @property
     def model_name(self) -> str:
-        return self._model
+        return self._model or "not-set"
+
+    @property
+    def available_models(self) -> list[str]:
+        """List of available models (populated after initialize)."""
+        return self._available_models
 
     async def initialize(self) -> None:
         try:
@@ -180,14 +233,43 @@ class OllamaService(LLMService):
                 base_url=self._base_url,
                 timeout=httpx.Timeout(120.0),
             )
-            # Verify Ollama is running
-            response = await self._client.get("/api/tags")
-            response.raise_for_status()
+
+            # Discover available models
+            discovery = await discover_ollama(self._base_url)
+
+            if not discovery.available:
+                raise RuntimeError(
+                    f"Cannot connect to Ollama at {self._base_url}. "
+                    "Make sure Ollama is running (run 'ollama serve')."
+                )
+
+            self._available_models = discovery.models
+
+            # Auto-select model if not specified
+            if not self._model:
+                if self._available_models:
+                    self._model = self._available_models[0]
+                    print(f"Auto-selected Ollama model: {self._model}")
+                else:
+                    raise RuntimeError(
+                        "No models available in Ollama. "
+                        "Pull a model first: ollama pull llama3.2"
+                    )
+            else:
+                # Verify model exists
+                model_found = any(
+                    self._model == m or self._model == m.split(":")[0]
+                    for m in self._available_models
+                )
+                if not model_found and self._available_models:
+                    print(
+                        f"Warning: Model '{self._model}' not found. "
+                        f"Available: {', '.join(self._available_models)}"
+                    )
+
             self._ready = True
         except ImportError:
             raise ImportError("httpx package not installed")
-        except Exception as e:
-            raise RuntimeError(f"Cannot connect to Ollama at {self._base_url}: {e}")
 
     async def cleanup(self) -> None:
         if self._client:
@@ -196,6 +278,13 @@ class OllamaService(LLMService):
 
     def is_ready(self) -> bool:
         return self._ready and self._client is not None
+
+    async def list_models(self) -> list[str]:
+        """List available Ollama models."""
+        if self._available_models:
+            return self._available_models
+        discovery = await discover_ollama(self._base_url)
+        return discovery.models
 
     async def complete(
         self,

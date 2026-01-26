@@ -149,15 +149,15 @@ async function customizeForTemplate(
 
     if (options.template === 'ollama') {
       // Remove llama-cpp-python, keep httpx for ollama
-      content = content.replace(/llama-cpp-python[^\n]*\n?/g, '');
-      content = content.replace(/openai[^\n]*\n?/g, '');
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, '');
+      content = content.replace(/^\s*"openai[^"]*",?\n/gm, '');
     } else if (options.template === 'openai') {
       // Remove llama-cpp-python, keep openai
-      content = content.replace(/llama-cpp-python[^\n]*\n?/g, '');
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, '');
     } else if (options.template === 'custom') {
       // Remove all LLM dependencies
-      content = content.replace(/llama-cpp-python[^\n]*\n?/g, '');
-      content = content.replace(/openai[^\n]*\n?/g, '');
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, '');
+      content = content.replace(/^\s*"openai[^"]*",?\n/gm, '');
     }
 
     await fs.writeFile(pyprojectPath, content);

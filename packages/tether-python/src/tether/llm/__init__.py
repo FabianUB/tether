@@ -25,6 +25,12 @@ def get_ollama_service():
     return OllamaService
 
 
+def get_ollama_discovery():
+    """Get Ollama discovery utilities (requires ollama extra)."""
+    from tether.llm.ollama import discover_ollama, get_ollama_base_url, OllamaDiscoveryResult
+    return discover_ollama, get_ollama_base_url, OllamaDiscoveryResult
+
+
 def get_mock_service():
     """Get mock service for testing."""
     from tether.llm.base import MockLLMService
