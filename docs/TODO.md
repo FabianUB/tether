@@ -60,6 +60,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Handle Anthropic-specific parameters
 - [ ] Add to template as provider option
 
+### Model Workflows
+- [x] Add model switching endpoint (`POST /models/switch`)
+- [x] Add model selector dropdown in frontend
+- [ ] Multi-model pool (keep multiple models loaded)
+- [ ] Per-request model selection (use `model` field in chat requests)
+- [ ] Model routing based on task type
+- [ ] Model presets/profiles
+
 ### UX Improvements
 - [ ] Better model download/management UX
 - [ ] Add system tray support (optional)

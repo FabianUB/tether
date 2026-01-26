@@ -1,9 +1,9 @@
 """
-Model discovery endpoints.
+Model discovery and switching endpoints.
 """
 
-from fastapi import APIRouter, Request
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Request
+from pydantic import BaseModel, Field
 
 from app.services.llm import discover_ollama, get_ollama_base_url
 
@@ -14,6 +14,17 @@ class ModelsResponse(BaseModel):
     models: list[str]
     backend: str
     error: str | None = None
+
+
+class SwitchModelRequest(BaseModel):
+    model: str = Field(..., description="Model name to switch to")
+
+
+class SwitchModelResponse(BaseModel):
+    success: bool
+    previous_model: str | None
+    current_model: str
+    message: str
 
 
 router = APIRouter()
@@ -57,4 +68,59 @@ async def list_models(request: Request) -> ModelsResponse:
         current_model=llm_service.model_name,
         models=[llm_service.model_name] if llm_service.is_ready() else [],
         backend=backend,
+    )
+
+
+@router.post("/models/switch", response_model=SwitchModelResponse)
+async def switch_model(request: Request, body: SwitchModelRequest) -> SwitchModelResponse:
+    """
+    Switch to a different model.
+
+    For Ollama backend, switches to the specified model.
+    Other backends may not support runtime model switching.
+    """
+    llm_service = getattr(request.app.state, "llm_service", None)
+
+    if not llm_service:
+        raise HTTPException(status_code=503, detail="No LLM service configured")
+
+    if not llm_service.is_ready():
+        raise HTTPException(status_code=503, detail="LLM service not ready")
+
+    backend = llm_service.service_type
+    previous_model = llm_service.model_name
+
+    # For Ollama, we can switch models at runtime
+    if backend == "ollama":
+        # Verify the model exists
+        discovery = await discover_ollama(get_ollama_base_url())
+        if not discovery.available:
+            raise HTTPException(status_code=503, detail="Ollama not available")
+
+        # Check if model is in available models (exact match or base name match)
+        model_found = any(
+            body.model == m or body.model == m.split(":")[0]
+            for m in discovery.models
+        )
+
+        if not model_found:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Model '{body.model}' not found. Available: {', '.join(discovery.models)}",
+            )
+
+        # Switch the model
+        llm_service._model = body.model
+
+        return SwitchModelResponse(
+            success=True,
+            previous_model=previous_model,
+            current_model=body.model,
+            message=f"Switched from {previous_model} to {body.model}",
+        )
+
+    # Other backends don't support runtime switching
+    raise HTTPException(
+        status_code=400,
+        detail=f"Backend '{backend}' does not support runtime model switching",
     )

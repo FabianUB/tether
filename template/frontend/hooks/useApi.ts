@@ -37,6 +37,13 @@ export interface ModelsResponse {
   error: string | null;
 }
 
+export interface SwitchModelResponse {
+  success: boolean;
+  previous_model: string | null;
+  current_model: string;
+  message: string;
+}
+
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 // Configuration
@@ -89,6 +96,13 @@ async function checkHealth(): Promise<HealthResponse> {
 
 async function fetchModels(): Promise<ModelsResponse> {
   return apiFetch<ModelsResponse>('/models');
+}
+
+async function switchModel(model: string): Promise<SwitchModelResponse> {
+  return apiFetch<SwitchModelResponse>('/models/switch', {
+    method: 'POST',
+    body: JSON.stringify({ model }),
+  });
 }
 
 async function waitForBackend(): Promise<boolean> {
@@ -185,7 +199,21 @@ export function useBackendStatus() {
     }
   }, []);
 
-  return { status, health, modelInfo, error, retry };
+  const changeModel = useCallback(async (model: string) => {
+    try {
+      const result = await switchModel(model);
+      if (result.success) {
+        // Refresh model info
+        const modelsData = await fetchModels().catch(() => null);
+        setModelInfo(modelsData);
+      }
+      return result;
+    } catch (err) {
+      throw err instanceof Error ? err : new Error('Failed to switch model');
+    }
+  }, []);
+
+  return { status, health, modelInfo, error, retry, changeModel };
 }
 
 export function useChat() {
