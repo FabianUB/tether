@@ -12,11 +12,17 @@ from pydantic import BaseModel, Field
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant", "system"]
     content: str
+    images: Optional[list[str]] = Field(
+        default=None, description="Base64-encoded images for vision models"
+    )
     timestamp: Optional[int] = None
 
 
 class ChatRequest(BaseModel):
     message: str = Field(..., description="The user's message")
+    images: Optional[list[str]] = Field(
+        default=None, description="Base64-encoded images for vision models"
+    )
     history: Optional[list[ChatMessage]] = Field(
         default=None, description="Previous messages in the conversation"
     )
@@ -88,8 +94,23 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         messages = []
         if body.history:
             for msg in body.history:
-                messages.append({"role": msg.role, "content": msg.content})
-        messages.append({"role": "user", "content": body.message})
+                msg_dict = {"role": msg.role, "content": msg.content}
+                if msg.images:
+                    msg_dict["images"] = msg.images
+                messages.append(msg_dict)
+
+        # Add current message with optional images
+        current_msg = {"role": "user", "content": body.message}
+        if body.images:
+            current_msg["images"] = body.images
+        messages.append(current_msg)
+
+        # Check if any message has images (vision models don't support thinking)
+        has_images = body.images or any(
+            msg.images for msg in (body.history or []) if msg.images
+        )
+        # Disable thinking for vision requests (not supported by Ollama)
+        use_thinking = False if has_images else (body.think if body.think is not None else True)
 
         # Use chat API if available (supports thinking models), fallback to complete
         if hasattr(llm_service, "chat"):
@@ -97,7 +118,7 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
                 messages,
                 temperature=body.temperature or 0.7,
                 max_tokens=body.max_tokens,
-                think=body.think if body.think is not None else True,
+                think=use_thinking,
             )
             # chat() returns dict with 'content' and 'thinking'
             if isinstance(result, dict):

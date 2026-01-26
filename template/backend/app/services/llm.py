@@ -41,7 +41,7 @@ class LLMSettings(BaseSettings):
         extra="ignore",
     )
 
-    tether_llm_backend: Literal["local", "ollama", "openai", "mock"] = "local"
+    tether_llm_backend: Literal["local", "ollama", "openai", "mock"] = "ollama"
     tether_model_path: Optional[str] = None
     openai_api_key: Optional[str] = None
     tether_openai_model: str = "gpt-4o-mini"

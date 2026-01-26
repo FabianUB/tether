@@ -184,3 +184,23 @@
 .thinking-content p:last-child {
   margin-bottom: 0;
 }
+
+/* Message images */
+.message-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.message-image {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 6px;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+.message-image:hover {
+  opacity: 0.9;
+}

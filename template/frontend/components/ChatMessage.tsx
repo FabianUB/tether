@@ -23,6 +23,18 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </span>
         )}
       </div>
+      {message.images && message.images.length > 0 && (
+        <div className="message-images">
+          {message.images.map((img, index) => (
+            <img
+              key={index}
+              src={`data:image/jpeg;base64,${img}`}
+              alt={`Attached ${index + 1}`}
+              className="message-image"
+            />
+          ))}
+        </div>
+      )}
       {message.thinking && (
         <div className="message-thinking">
           <button

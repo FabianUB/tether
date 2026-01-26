@@ -5,12 +5,14 @@ import { invoke } from '@tauri-apps/api/core';
 export interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
   content: string;
+  images?: string[];
   thinking?: string;
   timestamp?: number;
 }
 
 export interface ChatRequest {
   message: string;
+  images?: string[];
   history?: ChatMessage[];
   model?: string;
   temperature?: number;
@@ -229,6 +231,7 @@ export function useChat() {
       const userMessage: ChatMessage = {
         role: 'user',
         content,
+        images: options?.images,
         timestamp: Date.now(),
       };
 
@@ -239,6 +242,7 @@ export function useChat() {
       try {
         const response = await sendChatRequest({
           message: content,
+          images: options?.images,
           history: messages,
           ...options,
         });
