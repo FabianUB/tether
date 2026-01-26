@@ -29,6 +29,14 @@ export interface HealthResponse {
   version: string;
 }
 
+export interface ModelsResponse {
+  available: boolean;
+  current_model: string | null;
+  models: string[];
+  backend: string;
+  error: string | null;
+}
+
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 // Configuration
@@ -79,6 +87,10 @@ async function checkHealth(): Promise<HealthResponse> {
   return apiFetch<HealthResponse>('/health');
 }
 
+async function fetchModels(): Promise<ModelsResponse> {
+  return apiFetch<ModelsResponse>('/models');
+}
+
 async function waitForBackend(): Promise<boolean> {
   // First, get the correct API URL from Tauri
   await getApiUrl();
@@ -108,6 +120,7 @@ async function sendChatRequest(request: ChatRequest): Promise<ChatResponse> {
 export function useBackendStatus() {
   const [status, setStatus] = useState<ConnectionStatus>('connecting');
   const [health, setHealth] = useState<HealthResponse | null>(null);
+  const [modelInfo, setModelInfo] = useState<ModelsResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
@@ -122,9 +135,13 @@ export function useBackendStatus() {
         if (!mounted) return;
 
         if (ready) {
-          const healthData = await checkHealth();
+          const [healthData, modelsData] = await Promise.all([
+            checkHealth(),
+            fetchModels().catch(() => null),
+          ]);
           if (!mounted) return;
           setHealth(healthData);
+          setModelInfo(modelsData);
           setStatus('connected');
         } else {
           setStatus('error');
@@ -151,8 +168,12 @@ export function useBackendStatus() {
     try {
       const ready = await waitForBackend();
       if (ready) {
-        const healthData = await checkHealth();
+        const [healthData, modelsData] = await Promise.all([
+          checkHealth(),
+          fetchModels().catch(() => null),
+        ]);
         setHealth(healthData);
+        setModelInfo(modelsData);
         setStatus('connected');
       } else {
         setStatus('error');
@@ -164,7 +185,7 @@ export function useBackendStatus() {
     }
   }, []);
 
-  return { status, health, error, retry };
+  return { status, health, modelInfo, error, retry };
 }
 
 export function useChat() {

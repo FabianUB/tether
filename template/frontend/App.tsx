@@ -4,13 +4,13 @@ import { ModelStatus } from './components/ModelStatus';
 import './App.css';
 
 function App() {
-  const { status, health, error, retry } = useBackendStatus();
+  const { status, health, modelInfo, error, retry } = useBackendStatus();
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>Tether App</h1>
-        <ModelStatus status={status} health={health} />
+        <ModelStatus status={status} health={health} modelInfo={modelInfo} />
       </header>
 
       <main className="app-main">

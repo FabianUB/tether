@@ -1,3 +1,4 @@
+import Markdown from 'react-markdown';
 import type { ChatMessage as ChatMessageType } from '../hooks/useApi';
 import './ChatMessage.css';
 
@@ -20,7 +21,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </span>
         )}
       </div>
-      <div className="message-content">{message.content}</div>
+      <div className="message-content">
+        {isUser ? (
+          message.content
+        ) : (
+          <Markdown>{message.content}</Markdown>
+        )}
+      </div>
     </div>
   );
 }

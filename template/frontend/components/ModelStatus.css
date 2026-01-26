@@ -16,7 +16,16 @@
   font-weight: 500;
 }
 
-.version {
+.model-name {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.75rem;
+  background: var(--color-surface, rgba(0, 0, 0, 0.1));
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+}
+
+.backend-type {
   font-size: 0.75rem;
   opacity: 0.7;
+  text-transform: capitalize;
 }
