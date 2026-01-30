@@ -7,6 +7,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ## Immediate
 
 ### Testing
+
 - [ ] Add unit tests for template frontend (hooks, components)
 - [ ] Add unit tests for template backend (routes, services)
 - [ ] Add integration tests for CLI (`create-tether-app`)
@@ -14,12 +15,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Set up CI/CD with GitHub Actions
 
 ### CLI Improvements
+
 - [ ] Add `--dry-run` flag to preview what would be created
 - [ ] Better `--help` output with usage examples
 - [ ] Improve error messages with actionable suggestions
 - [ ] Add `--verbose` flag for debugging
 
 ### Cargo Build Optimizations
+
 - [x] Add `.cargo/config.toml` with dev profile settings
 - [ ] Document sccache setup for faster rebuilds
 - [ ] Document mold/lld linker setup
@@ -27,6 +30,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Document incremental build patterns
 
 ### Local Model Support
+
 - [ ] Fix local model provider detection (auto-detect GGUF files)
 - [x] Add Ollama support as LLM provider
 - [ ] Test llama-cpp-python on Windows and Linux
@@ -38,6 +42,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ## Short-term
 
 ### Multimodal: Image Support
+
 - [x] Add `images` parameter to chat API (base64 encoded)
 - [x] Update OllamaService to pass images to API
 - [x] Add image upload component (file picker)
@@ -49,6 +54,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [x] Drag-drop and paste image support
 
 ### Streaming Support
+
 - [ ] Implement SSE endpoint in Python backend
 - [ ] Add `useStreamingChat` hook
 - [ ] Create typewriter effect component
@@ -57,12 +63,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Add streaming to local LLM provider
 
 ### Anthropic API Support
+
 - [ ] Create `AnthropicLLMService` class
 - [ ] Add Claude model support
 - [ ] Handle Anthropic-specific parameters
 - [ ] Add to template as provider option
 
 ### Model Workflows
+
 - [x] Add model switching endpoint (`POST /models/switch`)
 - [x] Add model selector dropdown in frontend
 - [ ] Multi-model pool (keep multiple models loaded)
@@ -70,6 +78,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Model routing based on task type
 
 ### UX Improvements
+
 - [ ] Better model download/management UX
 - [ ] Add system tray support (optional)
 - [ ] Conversation persistence (localStorage or SQLite)
@@ -77,12 +86,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Dark mode support in template
 
 ### Documentation
+
 - [ ] Add troubleshooting guide
 - [ ] Document deployment process in detail
 - [ ] Add video tutorials
 - [ ] Create documentation site (Docusaurus or Astro)
 
 ### Examples
+
 - [ ] Create "Image Captioning" example app
 - [ ] Create "Document Q&A" example app
 - [ ] Create "Code Assistant" example app
@@ -93,6 +104,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ## Long-term
 
 ### GUI Model Manager
+
 - [ ] Model browser (Hugging Face integration)
 - [ ] One-click model download
 - [ ] Model configuration UI
@@ -100,6 +112,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Download progress tracking
 
 ### RAG Template
+
 - [ ] Create RAG-specific template
 - [ ] Add local embeddings support (sentence-transformers)
 - [ ] Vector store integration (ChromaDB or similar)
@@ -107,6 +120,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Citation/source tracking
 
 ### Developer Experience
+
 - [ ] VS Code extension for debugging
 - [ ] DevTools panel in app
 - [ ] Hot reload for Python backend
@@ -114,6 +128,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Performance profiling
 
 ### Multimodal: Audio & Video
+
 - [ ] Audio input with Whisper transcription
 - [ ] Voice output (text-to-speech)
 - [ ] Real-time audio streaming
@@ -121,6 +136,7 @@ Actionable roadmap with priorities. Check off items as they're completed.
 - [ ] Screen sharing / screenshot input
 
 ### Advanced Features
+
 - [ ] Multi-model chat (compare responses side-by-side)
 - [ ] Function calling / tool use support
 - [ ] Image generation support (Stable Diffusion)
@@ -142,13 +158,14 @@ Actionable roadmap with priorities. Check off items as they're completed.
 ## Nice to Have (Low Priority)
 
 ### Web Deployment Support
+
 - [ ] Make frontend detect Tauri vs browser environment
 - [ ] Add env-based API URL fallback (`VITE_API_URL`)
 - [ ] Create Dockerfile for backend deployment
 - [ ] Add docker-compose template
 - [ ] Document web deployment workflow
 
-*Note: Local LLM support doesn't apply to web - users would need API providers.*
+_Note: Local LLM support doesn't apply to web - users would need API providers._
 
 ---
 

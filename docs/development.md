@@ -18,6 +18,7 @@ The included `.cargo/config.toml` is already configured for fast incremental bui
 sccache caches compiled artifacts across projects, dramatically speeding up builds.
 
 **Install:**
+
 ```bash
 # macOS
 brew install sccache
@@ -30,6 +31,7 @@ cargo install sccache
 ```
 
 **Enable:**
+
 ```bash
 # Add to your shell profile (.bashrc, .zshrc, etc.)
 export RUSTC_WRAPPER=sccache
@@ -42,6 +44,7 @@ After enabling, your second build of any Rust project will be much faster.
 The default linker is slow. Alternative linkers can cut link times significantly.
 
 **macOS (lld via LLVM):**
+
 ```bash
 brew install llvm
 ```
@@ -49,6 +52,7 @@ brew install llvm
 Then uncomment the macOS section in `src-tauri/.cargo/config.toml`.
 
 **Linux (mold):**
+
 ```bash
 # Ubuntu/Debian
 sudo apt install mold
@@ -67,9 +71,9 @@ Then uncomment the Linux section in `src-tauri/.cargo/config.toml`.
 With optimizations enabled:
 
 | Build Type | First Build | Incremental |
-|------------|-------------|-------------|
-| Debug | 2-5 min | 5-30 sec |
-| Release | 5-10 min | 1-3 min |
+| ---------- | ----------- | ----------- |
+| Debug      | 2-5 min     | 5-30 sec    |
+| Release    | 5-10 min    | 1-3 min     |
 
 Times vary based on hardware. M1/M2 Macs and modern Linux machines are typically faster.
 
@@ -127,6 +131,7 @@ pnpm dev
 ```
 
 This starts:
+
 - Frontend dev server (Vite)
 - Backend server (uvicorn)
 - Tauri dev window
@@ -136,6 +141,7 @@ This starts:
 ### Frontend (React)
 
 Use browser DevTools in the Tauri window:
+
 - Right-click > Inspect
 - Or use the keyboard shortcut (Cmd+Opt+I on macOS)
 
@@ -176,6 +182,7 @@ kill -9 <PID>
 ### "Model not found"
 
 For Ollama:
+
 ```bash
 ollama pull llama3.2
 ```

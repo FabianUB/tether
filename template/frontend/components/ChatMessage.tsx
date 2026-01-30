@@ -1,22 +1,20 @@
-import { useState } from 'react';
-import Markdown from 'react-markdown';
-import type { ChatMessage as ChatMessageType } from '../hooks/useApi';
-import './ChatMessage.css';
+import { useState } from "react";
+import Markdown from "react-markdown";
+import type { ChatMessage as ChatMessageType } from "../hooks/useApi";
+import "./ChatMessage.css";
 
 interface ChatMessageProps {
   message: ChatMessageType;
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
-  const isUser = message.role === 'user';
+  const isUser = message.role === "user";
   const [showThinking, setShowThinking] = useState(false);
 
   return (
-    <div className={`message ${isUser ? 'message-user' : 'message-assistant'}`}>
+    <div className={`message ${isUser ? "message-user" : "message-assistant"}`}>
       <div className="message-header">
-        <span className="message-role">
-          {isUser ? 'You' : 'Assistant'}
-        </span>
+        <span className="message-role">{isUser ? "You" : "Assistant"}</span>
         {message.timestamp && (
           <span className="message-time">
             {new Date(message.timestamp).toLocaleTimeString()}
@@ -42,8 +40,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
             onClick={() => setShowThinking(!showThinking)}
             aria-expanded={showThinking}
           >
-            <span className={`thinking-chevron ${showThinking ? 'expanded' : ''}`}>
-              {showThinking ? '\u25BC' : '\u25B6'}
+            <span
+              className={`thinking-chevron ${showThinking ? "expanded" : ""}`}
+            >
+              {showThinking ? "\u25BC" : "\u25B6"}
             </span>
             Thinking
           </button>
@@ -55,11 +55,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
         </div>
       )}
       <div className="message-content">
-        {isUser ? (
-          message.content
-        ) : (
-          <Markdown>{message.content}</Markdown>
-        )}
+        {isUser ? message.content : <Markdown>{message.content}</Markdown>}
       </div>
     </div>
   );

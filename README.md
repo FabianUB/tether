@@ -44,13 +44,13 @@ my-app/
 
 ## Technology Stack
 
-| Layer | Technology | Purpose |
-|-------|------------|---------|
-| Desktop | Tauri 2.x | Lightweight, secure shell |
-| Frontend | React 18 + Vite | Fast, modern UI development |
-| Backend | FastAPI | Async Python API server |
-| ML | Ollama / llama-cpp-python | Local LLM inference |
-| Package Manager | uv | Fast Python dependency management |
+| Layer           | Technology                | Purpose                           |
+| --------------- | ------------------------- | --------------------------------- |
+| Desktop         | Tauri 2.x                 | Lightweight, secure shell         |
+| Frontend        | React 18 + Vite           | Fast, modern UI development       |
+| Backend         | FastAPI                   | Async Python API server           |
+| ML              | Ollama / llama-cpp-python | Local LLM inference               |
+| Package Manager | uv                        | Fast Python dependency management |
 
 ## Documentation
 

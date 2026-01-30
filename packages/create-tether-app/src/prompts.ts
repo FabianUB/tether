@@ -1,4 +1,4 @@
-import inquirer from 'inquirer';
+import inquirer from "inquirer";
 
 export interface PromptOptions {
   needsName: boolean;
@@ -6,28 +6,28 @@ export interface PromptOptions {
 
 export interface PromptAnswers {
   projectName: string;
-  template: 'local-llm' | 'ollama' | 'openai' | 'custom';
+  template: "local-llm" | "ollama" | "openai" | "custom";
   includeExample: boolean;
 }
 
 export async function promptForOptions(
-  options: PromptOptions
+  options: PromptOptions,
 ): Promise<PromptAnswers> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const questions: any[] = [];
 
   if (options.needsName) {
     questions.push({
-      type: 'input',
-      name: 'projectName',
-      message: 'Project name:',
-      default: 'my-tether-app',
+      type: "input",
+      name: "projectName",
+      message: "Project name:",
+      default: "my-tether-app",
       validate: (input: string) => {
         if (!input.trim()) {
-          return 'Project name is required';
+          return "Project name is required";
         }
         if (!/^[a-z0-9-_]+$/i.test(input)) {
-          return 'Project name can only contain letters, numbers, hyphens, and underscores';
+          return "Project name can only contain letters, numbers, hyphens, and underscores";
         }
         return true;
       },
@@ -36,42 +36,42 @@ export async function promptForOptions(
 
   questions.push(
     {
-      type: 'list',
-      name: 'template',
-      message: 'Select ML backend:',
+      type: "list",
+      name: "template",
+      message: "Select ML backend:",
       choices: [
         {
-          name: 'Ollama - Run models locally via Ollama (Recommended)',
-          value: 'ollama',
+          name: "Ollama - Run models locally via Ollama (Recommended)",
+          value: "ollama",
         },
         {
-          name: 'Local LLM (llama-cpp-python) - Embed models directly',
-          value: 'local-llm',
+          name: "Local LLM (llama-cpp-python) - Embed models directly",
+          value: "local-llm",
         },
         {
-          name: 'OpenAI API - Use GPT models via API',
-          value: 'openai',
+          name: "OpenAI API - Use GPT models via API",
+          value: "openai",
         },
         {
-          name: 'Custom - Bare FastAPI setup',
-          value: 'custom',
+          name: "Custom - Bare FastAPI setup",
+          value: "custom",
         },
       ],
-      default: 'ollama',
+      default: "ollama",
     },
     {
-      type: 'confirm',
-      name: 'includeExample',
-      message: 'Include example chat component?',
+      type: "confirm",
+      name: "includeExample",
+      message: "Include example chat component?",
       default: true,
-    }
+    },
   );
 
   const answers = await inquirer.prompt(questions);
 
   return {
-    projectName: answers.projectName || '',
-    template: answers.template || 'ollama',
+    projectName: answers.projectName || "",
+    template: answers.template || "ollama",
     includeExample: answers.includeExample ?? true,
   };
 }

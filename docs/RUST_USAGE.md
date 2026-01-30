@@ -107,7 +107,7 @@ Tauri provides a way for the frontend (JavaScript) to call Rust functions. These
 
 ```typescript
 // Frontend (TypeScript)
-const port = await invoke('get_api_port');
+const port = await invoke("get_api_port");
 ```
 
 ```rust
@@ -143,13 +143,13 @@ Key sections explained:
 ```json
 {
   "build": {
-    "beforeDevCommand": "pnpm dev",      // Runs before dev mode
+    "beforeDevCommand": "pnpm dev", // Runs before dev mode
     "beforeBuildCommand": "pnpm build:all", // Runs before production build
-    "devUrl": "http://localhost:1420",   // Vite dev server URL
-    "frontendDist": "../dist"            // Built frontend location
+    "devUrl": "http://localhost:1420", // Vite dev server URL
+    "frontendDist": "../dist" // Built frontend location
   },
   "bundle": {
-    "externalBin": ["binaries/api"]      // The Python sidecar binary
+    "externalBin": ["binaries/api"] // The Python sidecar binary
   }
 }
 ```
@@ -167,6 +167,7 @@ fn main() {
 ```
 
 This runs before Rust compilation. It:
+
 - Generates Rust code from `tauri.conf.json`
 - Sets up the build environment
 
@@ -198,12 +199,12 @@ async fn get_api_port(state: tauri::State<'_, Arc<Mutex<SidecarManager>>>) -> Re
 
 This is a **command** the frontend can call:
 
-| Part | Meaning |
-|------|---------|
-| `#[tauri::command]` | "This function can be called from JavaScript" |
-| `state: tauri::State<...>` | Access to shared app state |
-| `Arc<Mutex<...>>` | Thread-safe wrapper (like a lock) |
-| `Result<u16, String>` | Returns a port number or an error message |
+| Part                       | Meaning                                       |
+| -------------------------- | --------------------------------------------- |
+| `#[tauri::command]`        | "This function can be called from JavaScript" |
+| `state: tauri::State<...>` | Access to shared app state                    |
+| `Arc<Mutex<...>>`          | Thread-safe wrapper (like a lock)             |
+| `Result<u16, String>`      | Returns a port number or an error message     |
 
 #### Lines 25-64: App Setup
 
@@ -241,6 +242,7 @@ fn main() {
 ```
 
 **Lifecycle summary:**
+
 1. App starts → Find available port
 2. Create sidecar manager → Store in app state
 3. Spawn Python backend → Pass it the port
@@ -262,6 +264,7 @@ pub struct SidecarManager {
 ```
 
 Think of this as a class with two properties:
+
 - `child`: The Python process (null if not running)
 - `port`: Which port it's using
 
@@ -284,6 +287,7 @@ pub async fn start(&mut self, app: &AppHandle) -> Result<String, String> {
 ```
 
 This:
+
 1. Finds the `api` binary in `binaries/`
 2. Runs it with `--port 12345` argument
 3. Stores the process handle
@@ -332,16 +336,17 @@ The frontend uses Tauri's `invoke` function:
 
 ```typescript
 // frontend/src/hooks.ts
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 
 export async function getApiPort(): Promise<number> {
-    return await invoke('get_api_port');
+  return await invoke("get_api_port");
 }
 ```
 
 This calls the Rust function `get_api_port` and returns the port number.
 
 **Flow:**
+
 ```
 React Component
       │
@@ -397,6 +402,7 @@ Frontend uses: http://127.0.0.1:54321/api/chat
 ### "The Python backend isn't starting"
 
 Check:
+
 1. Is the binary in `src-tauri/binaries/`?
 2. Is it named correctly? (e.g., `api-aarch64-apple-darwin` on M1 Mac)
 3. Check Tauri logs for errors
@@ -408,14 +414,14 @@ The frontend might be trying to connect before the backend is ready:
 ```typescript
 // Wait for backend to be healthy
 async function waitForBackend(port: number, maxAttempts = 30) {
-    for (let i = 0; i < maxAttempts; i++) {
-        try {
-            const res = await fetch(`http://127.0.0.1:${port}/health`);
-            if (res.ok) return true;
-        } catch {}
-        await new Promise(r => setTimeout(r, 500));
-    }
-    return false;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const res = await fetch(`http://127.0.0.1:${port}/health`);
+      if (res.ok) return true;
+    } catch {}
+    await new Promise((r) => setTimeout(r, 500));
+  }
+  return false;
 }
 ```
 
@@ -439,7 +445,7 @@ async fn my_new_command() -> Result<String, String> {
 3. Call from frontend:
 
 ```typescript
-const result = await invoke('my_new_command');
+const result = await invoke("my_new_command");
 ```
 
 ---
@@ -448,12 +454,12 @@ const result = await invoke('my_new_command');
 
 **Almost never.** Here are the rare cases:
 
-| Scenario | What to modify |
-|----------|----------------|
-| Add new IPC command | `main.rs` — add `#[tauri::command]` function |
-| Change window settings | `tauri.conf.json` — modify `app.windows` |
-| Add native feature (file dialogs, notifications) | `Cargo.toml` — add Tauri plugin |
-| Change app icon | Replace files in `icons/` folder |
+| Scenario                                         | What to modify                               |
+| ------------------------------------------------ | -------------------------------------------- |
+| Add new IPC command                              | `main.rs` — add `#[tauri::command]` function |
+| Change window settings                           | `tauri.conf.json` — modify `app.windows`     |
+| Add native feature (file dialogs, notifications) | `Cargo.toml` — add Tauri plugin              |
+| Change app icon                                  | Replace files in `icons/` folder             |
 
 For everything else (UI, API logic, LLM integration), stay in React and Python.
 
@@ -461,22 +467,22 @@ For everything else (UI, API logic, LLM integration), stay in React and Python.
 
 ## Quick Reference
 
-| Rust Syntax | Meaning |
-|-------------|---------|
-| `fn` | Function definition |
-| `async fn` | Asynchronous function |
-| `let` | Variable declaration (immutable) |
-| `let mut` | Mutable variable |
-| `->` | Return type |
-| `Result<T, E>` | Returns `T` on success, `E` on error |
-| `Option<T>` | Either `Some(value)` or `None` |
-| `#[...]` | Attribute (like decorator in Python) |
-| `impl` | Implementation block (methods for a struct) |
-| `pub` | Public (visible outside module) |
-| `&` | Reference (borrow) |
-| `Arc<Mutex<T>>` | Thread-safe shared ownership with lock |
-| `.await` | Wait for async operation |
-| `?` | Return early if error |
+| Rust Syntax     | Meaning                                     |
+| --------------- | ------------------------------------------- |
+| `fn`            | Function definition                         |
+| `async fn`      | Asynchronous function                       |
+| `let`           | Variable declaration (immutable)            |
+| `let mut`       | Mutable variable                            |
+| `->`            | Return type                                 |
+| `Result<T, E>`  | Returns `T` on success, `E` on error        |
+| `Option<T>`     | Either `Some(value)` or `None`              |
+| `#[...]`        | Attribute (like decorator in Python)        |
+| `impl`          | Implementation block (methods for a struct) |
+| `pub`           | Public (visible outside module)             |
+| `&`             | Reference (borrow)                          |
+| `Arc<Mutex<T>>` | Thread-safe shared ownership with lock      |
+| `.await`        | Wait for async operation                    |
+| `?`             | Return early if error                       |
 
 ---
 

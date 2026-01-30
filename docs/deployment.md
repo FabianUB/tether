@@ -5,6 +5,7 @@ This guide covers building and distributing your Tether application.
 ## Build Process Overview
 
 Building a Tether app involves three steps:
+
 1. Build the React frontend
 2. Build the Python backend (PyInstaller)
 3. Build the Tauri app (includes both)
@@ -12,21 +13,25 @@ Building a Tether app involves three steps:
 ## Prerequisites
 
 ### All Platforms
+
 - Node.js 18+
 - Python 3.11+
 - Rust toolchain
 - uv package manager
 
 ### macOS
+
 ```bash
 xcode-select --install
 ```
 
 ### Windows
+
 - Visual Studio C++ Build Tools
 - WebView2 Runtime
 
 ### Linux
+
 ```bash
 # Ubuntu/Debian
 sudo apt install libwebkit2gtk-4.1-dev build-essential
@@ -56,6 +61,7 @@ pnpm tauri:build
 ```
 
 Output locations:
+
 - **macOS**: `src-tauri/target/release/bundle/dmg/`
 - **Windows**: `src-tauri/target/release/bundle/msi/` or `nsis/`
 - **Linux**: `src-tauri/target/release/bundle/deb/` or `appimage/`
@@ -136,7 +142,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build:
@@ -171,7 +177,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
       - name: Install uv
         uses: astral-sh/setup-uv@v3
@@ -201,8 +207,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v__VERSION__
-          releaseName: 'v__VERSION__'
-          releaseBody: 'See the assets for download links.'
+          releaseName: "v__VERSION__"
+          releaseBody: "See the assets for download links."
           releaseDraft: true
           prerelease: false
           args: --target ${{ matrix.target }}
@@ -220,22 +226,26 @@ jobs:
 - [ ] Check app icons are present
 
 ### macOS
+
 - [ ] Sign the application
 - [ ] Notarize with Apple
 - [ ] Test on fresh macOS install
 
 ### Windows
+
 - [ ] Sign the executable
 - [ ] Test on fresh Windows install
 - [ ] Verify SmartScreen doesn't block
 
 ### Linux
+
 - [ ] Test AppImage on different distros
 - [ ] Verify permissions are correct
 
 ## Bundle Size
 
 Expected sizes:
+
 - **Python backend binary**: 50-150 MB
 - **Final installer**: 80-200 MB
 
@@ -294,5 +304,6 @@ rustup target add x86_64-apple-darwin
 ### Binary not found
 
 Ensure the binary name matches `tauri.conf.json`:
+
 - Binary: `api-aarch64-apple-darwin`
 - Config: `"externalBin": ["binaries/api"]`

@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { useChat } from '../hooks/useApi';
-import { ChatMessage } from './ChatMessage';
-import './Chat.css';
+import { useState, useRef, useEffect } from "react";
+import { useChat } from "../hooks/useApi";
+import { ChatMessage } from "./ChatMessage";
+import "./Chat.css";
 
 export function Chat() {
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [thinkingEnabled, setThinkingEnabled] = useState(true);
   const [pendingImages, setPendingImages] = useState<string[]>([]);
   const [isDragging, setIsDragging] = useState(false);
@@ -13,7 +13,7 @@ export function Chat() {
   const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   useEffect(() => {
@@ -26,7 +26,7 @@ export function Chat() {
       reader.onload = () => {
         // Remove data URL prefix (e.g., "data:image/png;base64,")
         const result = reader.result as string;
-        const base64 = result.split(',')[1];
+        const base64 = result.split(",")[1];
         resolve(base64);
       };
       reader.onerror = reject;
@@ -37,7 +37,7 @@ export function Chat() {
   const processFiles = async (files: FileList | File[]) => {
     const newImages: string[] = [];
     for (const file of Array.from(files)) {
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         const base64 = await fileToBase64(file);
         newImages.push(base64);
       }
@@ -55,7 +55,7 @@ export function Chat() {
 
     // Reset input so same file can be selected again
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -66,7 +66,7 @@ export function Chat() {
     e.preventDefault();
     e.stopPropagation();
     dragCounterRef.current++;
-    if (e.dataTransfer.types.includes('Files')) {
+    if (e.dataTransfer.types.includes("Files")) {
       setIsDragging(true);
     }
   };
@@ -103,7 +103,7 @@ export function Chat() {
     const imageFiles: File[] = [];
 
     for (const item of Array.from(items)) {
-      if (item.type.startsWith('image/')) {
+      if (item.type.startsWith("image/")) {
         const file = item.getAsFile();
         if (file) {
           imageFiles.push(file);
@@ -127,7 +127,7 @@ export function Chat() {
 
     const message = input;
     const images = pendingImages.length > 0 ? pendingImages : undefined;
-    setInput('');
+    setInput("");
     setPendingImages([]);
 
     try {
@@ -139,7 +139,7 @@ export function Chat() {
 
   return (
     <div
-      className={`chat ${isDragging ? 'chat-dragging' : ''}`}
+      className={`chat ${isDragging ? "chat-dragging" : ""}`}
       onDragEnter={handleDragEnter}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -185,13 +185,17 @@ export function Chat() {
           <>
             {thinkingEnabled && (
               <div className="image-warning">
-                Thinking mode is not supported with images and will be disabled for this message.
+                Thinking mode is not supported with images and will be disabled
+                for this message.
               </div>
             )}
             <div className="pending-images">
               {pendingImages.map((img, index) => (
                 <div key={index} className="pending-image">
-                  <img src={`data:image/jpeg;base64,${img}`} alt={`Pending ${index + 1}`} />
+                  <img
+                    src={`data:image/jpeg;base64,${img}`}
+                    alt={`Pending ${index + 1}`}
+                  />
                   <button
                     type="button"
                     className="remove-image"
@@ -221,10 +225,19 @@ export function Chat() {
             disabled={isLoading}
             title="Add image (vision models)"
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
             </svg>
           </button>
           <input
@@ -236,7 +249,12 @@ export function Chat() {
             disabled={isLoading}
             className="chat-input"
           />
-          <button type="submit" disabled={isLoading || (!input.trim() && pendingImages.length === 0)}>
+          <button
+            type="submit"
+            disabled={
+              isLoading || (!input.trim() && pendingImages.length === 0)
+            }
+          >
             Send
           </button>
         </div>

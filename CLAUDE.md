@@ -7,6 +7,7 @@ Guidelines for Claude (and contributors) when working on the Tether codebase.
 ## Project Overview
 
 Tether is a template for building AI/ML desktop applications using:
+
 - **Frontend**: React 18 + TypeScript + Vite
 - **Backend**: Python 3.11+ + FastAPI + uvicorn
 - **Desktop**: Tauri 2.x (Rust)
@@ -60,27 +61,31 @@ tether/
 ### TypeScript
 
 **Naming:**
+
 - `PascalCase` for types, interfaces, classes, React components
 - `camelCase` for variables, functions, hooks
 - Prefix hooks with `use` (e.g., `useBackendStatus`, `useChat`)
 - Prefix interfaces with their purpose, not `I` (e.g., `ChatMessage`, not `IChatMessage`)
 
 **File organization:**
+
 - One primary export per file (types can have multiple)
 - Use `index.ts` for re-exports only
 - Use `.js` extension in imports (ES modules compatibility)
 
 **Imports:**
+
 ```typescript
 // External libraries first
-import { useState, useCallback } from 'react';
+import { useState, useCallback } from "react";
 
 // Internal modules
-import { checkHealth } from './api-client.js';
-import type { ChatMessage, HealthResponse } from './types.js';
+import { checkHealth } from "./api-client.js";
+import type { ChatMessage, HealthResponse } from "./types.js";
 ```
 
 **Patterns:**
+
 ```typescript
 // Use explicit return types on exported functions
 export function useChat(): UseChatReturn {
@@ -88,10 +93,10 @@ export function useChat(): UseChatReturn {
 }
 
 // Use `type` for type aliases, `interface` for object shapes
-type ConnectionStatus = 'connecting' | 'connected' | 'error';
+type ConnectionStatus = "connecting" | "connected" | "error";
 
 interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
 }
 
@@ -99,17 +104,19 @@ interface ChatMessage {
 const response = await fetch(url);
 
 // Use optional chaining and nullish coalescing
-const name = user?.profile?.name ?? 'Anonymous';
+const name = user?.profile?.name ?? "Anonymous";
 ```
 
 ### Python
 
 **Follow PEP 8 with these specifics:**
+
 - Line length: 88 characters (Black default)
 - Use double quotes for strings
 - Use trailing commas in multi-line structures
 
 **Type hints are required:**
+
 ```python
 from typing import Optional, Literal, AsyncIterator
 
@@ -125,6 +132,7 @@ async def complete(
 ```
 
 **Async patterns:**
+
 ```python
 # Use async context managers for lifespan
 @asynccontextmanager
@@ -139,6 +147,7 @@ result = await loop.run_in_executor(None, blocking_function)
 ```
 
 **Docstrings:**
+
 ```python
 def create_app(
     title: str = "Tether App",
@@ -157,6 +166,7 @@ def create_app(
 ```
 
 **Imports:**
+
 ```python
 # Standard library
 import asyncio
@@ -173,11 +183,13 @@ from app.services.llm import LLMService
 ### Rust
 
 **The Rust code is intentionally minimal.** Only modify when:
+
 - Adding new Tauri commands (IPC endpoints)
 - Changing sidecar process management
 - Adding native platform features
 
 **Patterns:**
+
 ```rust
 // Use async_runtime for async operations
 tauri::async_runtime::spawn(async move {
@@ -200,13 +212,16 @@ app.manage(manager);
 ## Key Architectural Decisions
 
 ### Frontend-Backend Communication
+
 - Frontend uses `fetch()` to call backend API (no Tauri IPC for data)
 - Port is obtained via Tauri command `get_api_port()`
 - Backend URL is constructed as `http://127.0.0.1:{port}`
 - This allows easy testing of backend independently
 
 ### LLM Service Abstraction
+
 All LLM backends implement the `LLMService` abstract base class in `template/backend/app/services/llm/base.py`:
+
 ```python
 class LLMService(ABC):
     @abstractmethod
@@ -220,11 +235,13 @@ class LLMService(ABC):
 ```
 
 ### State Management
+
 - Frontend: React hooks (`useState`, `useCallback`) - no Redux/Zustand
 - Backend: FastAPI `app.state` for services, Pydantic for data validation
 - Cross-cutting: API responses define the contract
 
 ### Process Lifecycle
+
 1. Tauri starts, finds available port via `portpicker`
 2. Rust spawns Python sidecar with `--port` argument
 3. Frontend waits for backend health check to pass
@@ -235,23 +252,27 @@ class LLMService(ABC):
 ## How to Add New Features
 
 ### Adding a new LLM provider
+
 1. Create `template/backend/app/services/llm/newprovider.py`
 2. Implement `LLMService` interface
 3. Add to `template/backend/app/services/llm/__init__.py`
 4. Update type definitions if needed
 
 ### Adding a new React hook
+
 1. Add to `template/frontend/src/hooks/useApi.ts` or create a new hook file
 2. Export from appropriate location
 3. Add TypeScript types as needed
 
 ### Adding a new API endpoint
+
 1. Add route in `template/backend/app/routes/`
 2. Add Pydantic models in `template/backend/app/models.py`
 3. Add corresponding TypeScript types in frontend
 4. Add fetch wrapper in `template/frontend/src/hooks/useApi.ts`
 
 ### Modifying the CLI
+
 1. Modify `packages/create-tether-app/src/cli.ts` (Commander)
 2. Update prompts in `prompts.ts` if interactive
 3. Handle in `scaffold.ts` for file generation
@@ -261,17 +282,19 @@ class LLMService(ABC):
 ## Testing Guidelines
 
 ### TypeScript (Vitest)
-```typescript
-import { describe, it, expect, vi } from 'vitest';
 
-describe('useChat', () => {
-  it('should add user message to history', async () => {
+```typescript
+import { describe, it, expect, vi } from "vitest";
+
+describe("useChat", () => {
+  it("should add user message to history", async () => {
     // Test implementation
   });
 });
 ```
 
 ### Python (pytest)
+
 ```python
 import pytest
 from app.main import app
@@ -287,6 +310,7 @@ def test_health_endpoint(client):
 ```
 
 ### Integration Tests
+
 - Test the full flow: Frontend -> API -> LLM Service
 - Use `MockLLMService` for deterministic responses
 - Test error cases (backend down, model not loaded)
@@ -296,20 +320,24 @@ def test_health_endpoint(client):
 ## Common Pitfalls to Avoid
 
 ### TypeScript
+
 - **Don't forget `.js` in imports** - ESM requires file extensions
 - **Don't use `any`** - Create proper types
 - **Don't mutate state directly** - Use `setState` with new objects
 
 ### Python
+
 - **Don't block the event loop** - Use `run_in_executor` for sync code
 - **Don't forget `await`** - Async functions need await
 - **Don't use `from x import *`** - Explicit imports only
 
 ### Rust
+
 - **Don't modify unless necessary** - The Rust layer should be stable
 - **Don't panic in commands** - Return `Result<T, String>`
 
 ### General
+
 - **Don't add dependencies lightly** - Each dep is a maintenance burden
 - **Don't break the API contract** - Frontend and backend must agree
 - **Don't commit `.env` files** - Use `.env.example` templates
@@ -335,13 +363,13 @@ main (protected)
 
 Use prefixes to categorize branches:
 
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `feature/` | New functionality | `feature/anthropic-provider` |
-| `fix/` | Bug fixes | `fix/sidecar-crash-on-close` |
-| `chore/` | Maintenance, CI, docs | `chore/update-ci-workflow` |
-| `refactor/` | Code restructuring | `refactor/llm-service-interface` |
-| `docs/` | Documentation changes | `docs/template-simplification` |
+| Prefix      | Purpose               | Example                          |
+| ----------- | --------------------- | -------------------------------- |
+| `feature/`  | New functionality     | `feature/anthropic-provider`     |
+| `fix/`      | Bug fixes             | `fix/sidecar-crash-on-close`     |
+| `chore/`    | Maintenance, CI, docs | `chore/update-ci-workflow`       |
+| `refactor/` | Code restructuring    | `refactor/llm-service-interface` |
+| `docs/`     | Documentation changes | `docs/template-simplification`   |
 
 ### Commit Messages (Conventional Commits)
 
@@ -356,6 +384,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 ```
 
 **Types:**
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation only
@@ -366,6 +395,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 **Scopes:** `cli`, `template`, `ci`, `docs`
 
 **Examples:**
+
 ```
 feat(cli): add --dry-run flag for project scaffolding
 fix(template): handle missing model file gracefully
@@ -376,6 +406,7 @@ docs: update README with installation instructions
 ### Branch Protection Rules
 
 The `main` branch is protected:
+
 - Requires pull request before merging
 - Requires CI checks to pass
 - No direct pushes allowed
@@ -383,6 +414,7 @@ The `main` branch is protected:
 ### Pull Request Workflow
 
 1. **Create a branch** from `main`:
+
    ```bash
    git checkout main
    git pull origin main
@@ -392,11 +424,13 @@ The `main` branch is protected:
 2. **Make changes** and commit with conventional commits
 
 3. **Push and create PR**:
+
    ```bash
    git push -u origin feature/my-feature
    ```
 
 4. **Run checks locally** before requesting review:
+
    ```bash
    pnpm lint
    pnpm typecheck

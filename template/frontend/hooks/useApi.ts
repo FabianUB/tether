@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
-import { invoke } from '@tauri-apps/api/core';
+import { useState, useEffect, useCallback } from "react";
+import { invoke } from "@tauri-apps/api/core";
 
 // Types
 export interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   images?: string[];
   thinking?: string;
@@ -25,11 +25,11 @@ export interface ChatResponse {
   thinking?: string;
   tokens_used?: number;
   model?: string;
-  finish_reason?: 'stop' | 'length' | 'error';
+  finish_reason?: "stop" | "length" | "error";
 }
 
 export interface HealthResponse {
-  status: 'healthy' | 'unhealthy';
+  status: "healthy" | "unhealthy";
   model_loaded: boolean;
   version: string;
 }
@@ -49,10 +49,15 @@ export interface SwitchModelResponse {
   message: string;
 }
 
-export type ConnectionStatus = 'connecting' | 'loading-model' | 'connected' | 'disconnected' | 'error';
+export type ConnectionStatus =
+  | "connecting"
+  | "loading-model"
+  | "connected"
+  | "disconnected"
+  | "error";
 
 // Configuration
-let API_URL = 'http://127.0.0.1:8000';
+let API_URL = "http://127.0.0.1:8000";
 const MAX_RETRIES = 30;
 const RETRY_DELAY = 1000;
 const REQUEST_TIMEOUT = 120000; // 2 minutes for thinking models
@@ -61,7 +66,7 @@ const HEALTH_CHECK_INTERVAL = 10000; // Check health every 10 seconds
 // Get the API port from Tauri
 async function getApiUrl(): Promise<string> {
   try {
-    const port = await invoke<number>('get_api_port');
+    const port = await invoke<number>("get_api_port");
     API_URL = `http://127.0.0.1:${port}`;
     return API_URL;
   } catch {
@@ -71,7 +76,10 @@ async function getApiUrl(): Promise<string> {
 }
 
 // API functions
-async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+async function apiFetch<T>(
+  path: string,
+  options: RequestInit = {},
+): Promise<T> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 
@@ -80,13 +88,15 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
       ...options,
       signal: controller.signal,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       },
     });
 
     if (!response.ok) {
-      const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+      const error = await response
+        .json()
+        .catch(() => ({ error: "Unknown error" }));
       throw new Error(error.error || `HTTP ${response.status}`);
     }
 
@@ -97,16 +107,16 @@ async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> 
 }
 
 async function checkHealth(): Promise<HealthResponse> {
-  return apiFetch<HealthResponse>('/health');
+  return apiFetch<HealthResponse>("/health");
 }
 
 async function fetchModels(): Promise<ModelsResponse> {
-  return apiFetch<ModelsResponse>('/models');
+  return apiFetch<ModelsResponse>("/models");
 }
 
 async function switchModel(model: string): Promise<SwitchModelResponse> {
-  return apiFetch<SwitchModelResponse>('/models/switch', {
-    method: 'POST',
+  return apiFetch<SwitchModelResponse>("/models/switch", {
+    method: "POST",
     body: JSON.stringify({ model }),
   });
 }
@@ -118,7 +128,7 @@ async function waitForBackend(): Promise<boolean> {
   for (let i = 0; i < MAX_RETRIES; i++) {
     try {
       const health = await checkHealth();
-      if (health.status === 'healthy') {
+      if (health.status === "healthy") {
         return true;
       }
     } catch {
@@ -130,15 +140,15 @@ async function waitForBackend(): Promise<boolean> {
 }
 
 async function sendChatRequest(request: ChatRequest): Promise<ChatResponse> {
-  return apiFetch<ChatResponse>('/chat', {
-    method: 'POST',
+  return apiFetch<ChatResponse>("/chat", {
+    method: "POST",
     body: JSON.stringify(request),
   });
 }
 
 // Hooks
 export function useBackendStatus() {
-  const [status, setStatus] = useState<ConnectionStatus>('connecting');
+  const [status, setStatus] = useState<ConnectionStatus>("connecting");
   const [health, setHealth] = useState<HealthResponse | null>(null);
   const [modelInfo, setModelInfo] = useState<ModelsResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -148,7 +158,7 @@ export function useBackendStatus() {
     let healthCheckInterval: ReturnType<typeof setInterval> | null = null;
 
     const connect = async () => {
-      setStatus('connecting');
+      setStatus("connecting");
       setError(null);
 
       try {
@@ -157,7 +167,7 @@ export function useBackendStatus() {
 
         if (ready) {
           // Backend is reachable, now check model status
-          setStatus('loading-model');
+          setStatus("loading-model");
 
           const [healthData, modelsData] = await Promise.all([
             checkHealth(),
@@ -169,13 +179,13 @@ export function useBackendStatus() {
 
           // Check if model is loaded
           if (healthData.model_loaded) {
-            setStatus('connected');
+            setStatus("connected");
           } else if (modelsData?.error) {
-            setStatus('error');
+            setStatus("error");
             setError(new Error(modelsData.error));
           } else {
             // Model not loaded but no error - still connected
-            setStatus('connected');
+            setStatus("connected");
           }
 
           // Start periodic health checks
@@ -186,21 +196,25 @@ export function useBackendStatus() {
               if (!mounted) return;
               setHealth(healthData);
               // If we were disconnected but now healthy, reconnect
-              setStatus((prev) => prev === 'disconnected' ? 'connected' : prev);
+              setStatus((prev) =>
+                prev === "disconnected" ? "connected" : prev,
+              );
             } catch {
               if (!mounted) return;
-              setStatus('disconnected');
-              setError(new Error('Lost connection to backend'));
+              setStatus("disconnected");
+              setError(new Error("Lost connection to backend"));
             }
           }, HEALTH_CHECK_INTERVAL);
         } else {
-          setStatus('error');
-          setError(new Error('Backend failed to start. Check terminal for errors.'));
+          setStatus("error");
+          setError(
+            new Error("Backend failed to start. Check terminal for errors."),
+          );
         }
       } catch (err) {
         if (!mounted) return;
-        setStatus('error');
-        setError(err instanceof Error ? err : new Error('Connection failed'));
+        setStatus("error");
+        setError(err instanceof Error ? err : new Error("Connection failed"));
       }
     };
 
@@ -215,7 +229,7 @@ export function useBackendStatus() {
   }, []);
 
   const retry = useCallback(async () => {
-    setStatus('connecting');
+    setStatus("connecting");
     setError(null);
 
     try {
@@ -227,14 +241,14 @@ export function useBackendStatus() {
         ]);
         setHealth(healthData);
         setModelInfo(modelsData);
-        setStatus('connected');
+        setStatus("connected");
       } else {
-        setStatus('error');
-        setError(new Error('Backend failed to become healthy'));
+        setStatus("error");
+        setError(new Error("Backend failed to become healthy"));
       }
     } catch (err) {
-      setStatus('error');
-      setError(err instanceof Error ? err : new Error('Connection failed'));
+      setStatus("error");
+      setError(err instanceof Error ? err : new Error("Connection failed"));
     }
   }, []);
 
@@ -248,7 +262,7 @@ export function useBackendStatus() {
       }
       return result;
     } catch (err) {
-      throw err instanceof Error ? err : new Error('Failed to switch model');
+      throw err instanceof Error ? err : new Error("Failed to switch model");
     }
   }, []);
 
@@ -261,9 +275,12 @@ export function useChat() {
   const [error, setError] = useState<Error | null>(null);
 
   const sendMessage = useCallback(
-    async (content: string, options?: Partial<Omit<ChatRequest, 'message'>>) => {
+    async (
+      content: string,
+      options?: Partial<Omit<ChatRequest, "message">>,
+    ) => {
       const userMessage: ChatMessage = {
-        role: 'user',
+        role: "user",
         content,
         images: options?.images,
         timestamp: Date.now(),
@@ -282,7 +299,7 @@ export function useChat() {
         });
 
         const assistantMessage: ChatMessage = {
-          role: 'assistant',
+          role: "assistant",
           content: response.response,
           thinking: response.thinking,
           timestamp: Date.now(),
@@ -291,14 +308,14 @@ export function useChat() {
         setMessages((prev) => [...prev, assistantMessage]);
         return response;
       } catch (err) {
-        const error = err instanceof Error ? err : new Error('Chat failed');
+        const error = err instanceof Error ? err : new Error("Chat failed");
         setError(error);
         throw error;
       } finally {
         setIsLoading(false);
       }
     },
-    [messages]
+    [messages],
   );
 
   const clearMessages = useCallback(() => {
