@@ -61,8 +61,18 @@ def build() -> None:
         "--specpath",
         str(backend_dir),
         "--clean",
-        str(backend_dir / "app" / "main.py"),
     ]
+
+    # Add llama-cpp-python collection if the package is installed
+    # This ensures the native llama.cpp library is bundled
+    try:
+        import llama_cpp
+        cmd.extend(["--collect-all", "llama_cpp"])
+        print("Including llama-cpp-python native libraries...")
+    except ImportError:
+        pass  # llama-cpp-python not installed, skip
+
+    cmd.append(str(backend_dir / "app" / "main.py"))
 
     print(f"Building Python backend for {target_triple}...")
     print(f"Command: {' '.join(cmd)}")
