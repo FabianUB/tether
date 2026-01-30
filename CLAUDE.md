@@ -12,48 +12,34 @@ Tether is a template for building AI/ML desktop applications using:
 - **Desktop**: Tauri 2.x (Rust)
 - **Package Manager**: pnpm (Node), uv (Python)
 
-The codebase is a monorepo managed by Turborepo with three main packages:
-- `create-tether-app`: CLI scaffolding tool
-- `tether-core`: Shared TypeScript utilities (hooks, types, API client)
-- `tether-python`: Python package (FastAPI app factory, LLM services)
-
 ---
 
 ## Directory Structure
 
 ```
 tether/
-├── packages/
-│   ├── create-tether-app/     # CLI tool
-│   │   └── src/
-│   │       ├── cli.ts         # Commander setup
-│   │       ├── prompts.ts     # Inquirer prompts
-│   │       ├── scaffold.ts    # File generation
-│   │       └── utils.ts       # Helpers
-│   │
-│   ├── tether-core/           # TypeScript library
-│   │   └── src/
-│   │       ├── index.ts       # Re-exports
-│   │       ├── types.ts       # Type definitions
-│   │       ├── config.ts      # Configuration
-│   │       ├── api-client.ts  # Fetch wrappers
-│   │       └── hooks.ts       # React hooks
-│   │
-│   └── tether-python/         # Python package
-│       └── src/tether/
-│           ├── __init__.py    # Package exports
-│           ├── app.py         # FastAPI factory
-│           ├── config.py      # Settings
-│           ├── models.py      # Pydantic models
-│           └── llm/
-│               ├── base.py    # Abstract LLMService
-│               ├── local.py   # llama-cpp-python
-│               └── openai.py  # OpenAI API
-│
-├── template/                   # Scaffolded project template
+├── template/                   # THE deliverable (users clone this)
 │   ├── frontend/              # React frontend
+│   │   └── src/
+│   │       ├── components/    # React components
+│   │       ├── hooks/         # Custom hooks (useApi.ts)
+│   │       └── App.tsx        # Main app
 │   ├── backend/               # Python backend
+│   │   └── app/
+│   │       ├── routes/        # API endpoints
+│   │       ├── services/      # LLM services
+│   │       └── main.py        # FastAPI app
 │   └── src-tauri/             # Rust/Tauri shell
+│       └── src/
+│           └── lib.rs         # Sidecar management
+│
+├── packages/
+│   └── create-tether-app/     # CLI scaffolding tool
+│       └── src/
+│           ├── cli.ts         # Commander setup
+│           ├── prompts.ts     # Inquirer prompts
+│           ├── scaffold.ts    # File generation
+│           └── utils.ts       # Helpers
 │
 ├── docs/                       # Documentation
 │   ├── CONSTITUTION.md        # Project vision and principles
@@ -61,7 +47,8 @@ tether/
 │   ├── getting-started.md     # Quick start guide
 │   ├── frontend-guide.md      # React/TypeScript guide
 │   ├── backend-guide.md       # Python/FastAPI guide
-│   └── deployment.md          # Build and distribution
+│   ├── deployment.md          # Build and distribution
+│   └── development.md         # Build optimization guide
 │
 └── examples/                   # Example applications
 ```
@@ -180,8 +167,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 # Local
-from tether.config import get_settings
-from tether.llm.base import LLMService
+from app.services.llm import LLMService
 ```
 
 ### Rust
@@ -220,7 +206,7 @@ app.manage(manager);
 - This allows easy testing of backend independently
 
 ### LLM Service Abstraction
-All LLM backends implement the `LLMService` abstract base class:
+All LLM backends implement the `LLMService` abstract base class in `template/backend/app/services/llm/base.py`:
 ```python
 class LLMService(ABC):
     @abstractmethod
@@ -249,23 +235,23 @@ class LLMService(ABC):
 ## How to Add New Features
 
 ### Adding a new LLM provider
-1. Create `packages/tether-python/src/tether/llm/newprovider.py`
+1. Create `template/backend/app/services/llm/newprovider.py`
 2. Implement `LLMService` interface
-3. Add to `packages/tether-python/src/tether/llm/__init__.py`
+3. Add to `template/backend/app/services/llm/__init__.py`
 4. Update type definitions if needed
 
 ### Adding a new React hook
-1. Add to `packages/tether-core/src/hooks.ts`
-2. Export from `packages/tether-core/src/index.ts`
-3. Add TypeScript types to `types.ts` if needed
+1. Add to `template/frontend/src/hooks/useApi.ts` or create a new hook file
+2. Export from appropriate location
+3. Add TypeScript types as needed
 
 ### Adding a new API endpoint
 1. Add route in `template/backend/app/routes/`
-2. Add Pydantic models in `packages/tether-python/src/tether/models.py`
-3. Add corresponding TypeScript types in `packages/tether-core/src/types.ts`
-4. Add fetch wrapper in `packages/tether-core/src/api-client.ts`
+2. Add Pydantic models in `template/backend/app/models.py`
+3. Add corresponding TypeScript types in frontend
+4. Add fetch wrapper in `template/frontend/src/hooks/useApi.ts`
 
-### Adding a new CLI option
+### Modifying the CLI
 1. Modify `packages/create-tether-app/src/cli.ts` (Commander)
 2. Update prompts in `prompts.ts` if interactive
 3. Handle in `scaffold.ts` for file generation
@@ -288,15 +274,16 @@ describe('useChat', () => {
 ### Python (pytest)
 ```python
 import pytest
-from tether import create_app
+from app.main import app
 
 @pytest.fixture
-def app():
-    return create_app()
+def client():
+    from fastapi.testclient import TestClient
+    return TestClient(app)
 
-@pytest.mark.asyncio
-async def test_health_endpoint(app):
-    # Test implementation
+def test_health_endpoint(client):
+    response = client.get("/health")
+    assert response.status_code == 200
 ```
 
 ### Integration Tests
@@ -354,6 +341,7 @@ Use prefixes to categorize branches:
 | `fix/` | Bug fixes | `fix/sidecar-crash-on-close` |
 | `chore/` | Maintenance, CI, docs | `chore/update-ci-workflow` |
 | `refactor/` | Code restructuring | `refactor/llm-service-interface` |
+| `docs/` | Documentation changes | `docs/template-simplification` |
 
 ### Commit Messages (Conventional Commits)
 
@@ -375,12 +363,12 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) format:
 - `refactor`: Code change that neither fixes nor adds
 - `test`: Adding or updating tests
 
-**Scopes:** `cli`, `core`, `python`, `template`, `ci`, `docs`
+**Scopes:** `cli`, `template`, `ci`, `docs`
 
 **Examples:**
 ```
-feat(cli): add --template flag for project scaffolding
-fix(python): handle missing model file gracefully
+feat(cli): add --dry-run flag for project scaffolding
+fix(template): handle missing model file gracefully
 chore(ci): use PowerShell commands on Windows runners
 docs: update README with installation instructions
 ```
@@ -445,20 +433,15 @@ Version format: `vMAJOR.MINOR.PATCH` (semver)
 ```bash
 # Development
 pnpm install          # Install all dependencies
-pnpm dev              # Run development servers
-pnpm build            # Build all packages
-pnpm test             # Run tests
-pnpm typecheck        # TypeScript checking
 pnpm format           # Format with Prettier
 
-# Template testing
+# Template development
 cd template
 pnpm install
 pnpm dev              # Start frontend + backend
 
-# Python package
-cd packages/tether-python
-uv venv
-uv pip install -e ".[dev]"
-pytest
+# CLI development
+cd packages/create-tether-app
+pnpm build
+node dist/cli.js my-test-app  # Test CLI locally
 ```

@@ -23,13 +23,13 @@ End users should receive a single installer (`.dmg`, `.exe`, `.AppImage`) that w
 ## What Tether IS
 
 ### A template for AI/ML desktop applications
-Tether provides a ready-to-use starting point with a React frontend, FastAPI backend with LLM endpoints, and Tauri for desktop packaging. Clone, customize, and build.
+Tether provides a ready-to-use starting point with a React frontend, FastAPI backend with LLM endpoints, and Tauri for desktop packaging. Clone it, customize it, ship it.
 
-### A scaffolding tool
-`create-tether-app` generates a working project structure with sensible defaults, so developers can start building features immediately instead of configuring build systems.
+### Code you own completely
+Once you clone or scaffold a Tether project, it's **your code**. There are no framework dependencies to update, no breaking changes to worry about. Fork it, modify it, delete what you don't need.
 
-### A best practices template
-The generated project demonstrates production patterns:
+### A best practices starting point
+The template demonstrates production patterns:
 - Type-safe API communication
 - Proper async handling
 - Clean separation of concerns
@@ -46,6 +46,9 @@ Tether handles the complexity of:
 ---
 
 ## What Tether is NOT (Anti-Goals)
+
+### Not a framework you depend on
+Unlike frameworks where you import their code, Tether generates code that you own. There's no `import tether` in your project.
 
 ### Not a full IDE or development environment
 Tether is a template, not an editor. Use your preferred IDE (VS Code, PyCharm, etc.).
@@ -148,20 +151,20 @@ Supports integration with [LangChain](https://langchain.com), [DSPy](https://git
 
 This is the high-level vision. For detailed, trackable tasks see [TODO.md](./TODO.md).
 
-### Phase 1: Foundation ✓
-Core packages, template with React + FastAPI + Tauri, local LLM integration, and OpenAI API support.
+### Phase 1: Foundation (Complete)
+Core template with React + FastAPI + Tauri, local LLM integration, and OpenAI API support.
 
 ### Phase 2: Production Readiness (Current)
-Testing, error handling, Ollama support, and publishing to npm/PyPI.
+Testing, error handling, Ollama support, CLI improvements.
 
 ### Phase 3: Streaming Support
 Server-Sent Events for token streaming, frontend streaming hooks, and typewriter effects.
 
 ### Phase 4: Provider Expansion
-Additional providers (Anthropic, Google Gemini) and a unified provider abstraction layer.
+Additional providers (Anthropic, Google Gemini) and improved provider abstractions.
 
 ### Future
-Plugin system, GUI model manager, RAG templates, and developer tooling.
+GUI model manager, RAG templates, and developer tooling.
 
 ---
 
@@ -171,10 +174,10 @@ Plugin system, GUI model manager, RAG templates, and developer tooling.
 |------|----------|-----------|
 | 2025-01 | Use Tauri 2.x | Stable release, better sidecar support |
 | 2025-01 | Use uv for Python | 10x faster than pip, better lockfiles |
-| 2025-01 | Monorepo structure | Easier to develop/test packages together |
 | 2025-01 | Abstract LLMService base class | Easy to add new providers |
 | 2025-01 | Dynamic port allocation | Avoid conflicts with other apps |
 | 2025-01 | No streaming in v0.1 | Simpler to get working first |
+| 2026-01 | Template over framework | Users own their code completely |
 
 ---
 

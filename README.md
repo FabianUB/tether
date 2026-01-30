@@ -1,6 +1,8 @@
 # Tether
 
-A ready-to-use template for building AI/ML desktop applications. Includes FastAPI backend with LLM endpoints, React frontend with chat UI, and Tauri for desktop packaging.
+A ready-to-use template for building AI/ML desktop applications. Clone it, customize it, ship it.
+
+**Stack:** React + FastAPI + Tauri
 
 ## Core Principles
 
@@ -11,31 +13,33 @@ A ready-to-use template for building AI/ML desktop applications. Includes FastAP
 
 ## Quick Start
 
+### Option 1: Use as GitHub Template (Recommended)
+
+1. Click **"Use this template"** on GitHub
+2. Clone your new repository
+3. Start building:
+
 ```bash
-# Create a new Tether app
-npx create-tether-app my-app
-
-# Navigate to your app
 cd my-app
-
-# Install dependencies
 pnpm install
+pnpm dev
+```
 
-# Start development
+### Option 2: CLI Scaffolding
+
+```bash
+npx create-tether-app my-app
+cd my-app
 pnpm dev
 ```
 
 ## Project Structure
 
 ```
-tether/
-├── packages/
-│   ├── create-tether-app/    # CLI scaffolding tool
-│   ├── tether-core/          # Shared TypeScript utilities
-│   └── tether-python/        # Python package (FastAPI + LLM)
-├── template/                  # Project template
-├── docs/                      # Documentation
-└── examples/                  # Example applications
+my-app/
+├── frontend/          # React 18 + TypeScript + Vite
+├── backend/           # Python 3.11+ + FastAPI + uvicorn
+└── src-tauri/         # Tauri 2.x (Rust shell)
 ```
 
 ## Technology Stack
@@ -45,50 +49,34 @@ tether/
 | Desktop | Tauri 2.x | Lightweight, secure shell |
 | Frontend | React 18 + Vite | Fast, modern UI development |
 | Backend | FastAPI | Async Python API server |
-| ML | llama-cpp-python | Local LLM inference |
+| ML | Ollama / llama-cpp-python | Local LLM inference |
 | Package Manager | uv | Fast Python dependency management |
 
-## Development
+## Documentation
 
-```bash
-# Install dependencies
-pnpm install
+- [Getting Started](docs/getting-started.md) - First steps
+- [Frontend Guide](docs/frontend-guide.md) - React/TypeScript development
+- [Backend Guide](docs/backend-guide.md) - Python/FastAPI development
+- [Deployment](docs/deployment.md) - Building installers
+- [Development](docs/development.md) - Build optimization tips
 
-# Build all packages
-pnpm build
+## What's Included
 
-# Run tests
-pnpm test
+- Chat UI component with message history
+- LLM service abstraction (Ollama, OpenAI, local models)
+- Health check and model switching endpoints
+- Image/vision support for multimodal models
+- Thinking mode for reasoning models
+- Automatic port allocation and process management
 
-# Format code
-pnpm format
-```
+## Customization
 
-## Packages
+This is **your** code. Fork it, modify it, delete what you don't need:
 
-### create-tether-app
-
-CLI tool for scaffolding new Tether projects.
-
-```bash
-npx create-tether-app my-app
-```
-
-### tether-core
-
-Shared TypeScript utilities including React hooks and type definitions.
-
-```typescript
-import { useModel, useApi } from '@tether/core';
-```
-
-### tether-python
-
-Python package with FastAPI app factory and LLM integrations.
-
-```python
-from tether import create_app, LLMService
-```
+- Swap React for Vue or Svelte
+- Replace FastAPI with Flask
+- Add your own ML models and endpoints
+- Change the UI completely
 
 ## License
 
