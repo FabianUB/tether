@@ -179,11 +179,13 @@ async function customizeForTemplate(
   if (await fs.pathExists(pythonServicePath)) {
     let content = await fs.readFile(pythonServicePath, "utf-8");
 
-    // The template uses: tether_llm_backend: Literal[...] = "local"
+    // Match tether_llm_backend: Literal[...] = "any_value"
     const backendRegex =
-      /(tether_llm_backend:\s*Literal\[[^\]]+\]\s*=\s*)["']local["']/;
+      /(tether_llm_backend:\s*Literal\[[^\]]+\]\s*=\s*)["'][^"']+["']/;
 
-    if (options.template === "ollama") {
+    if (options.template === "local-llm") {
+      content = content.replace(backendRegex, '$1"local"');
+    } else if (options.template === "ollama") {
       content = content.replace(backendRegex, '$1"ollama"');
     } else if (options.template === "openai") {
       content = content.replace(backendRegex, '$1"openai"');
