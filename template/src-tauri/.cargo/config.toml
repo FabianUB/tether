@@ -1,0 +1,38 @@
+# Cargo configuration for faster development builds
+# See docs/development.md for more optimization tips
+
+[profile.dev]
+# Skip optimizations for faster compile times
+opt-level = 0
+# Disable LTO for dev builds
+lto = false
+# Enable incremental compilation
+incremental = true
+# Reduce codegen units for faster incremental builds
+codegen-units = 256
+
+[profile.dev.package."*"]
+# Optimize dependencies even in dev mode (they rarely change)
+opt-level = 2
+
+[profile.release]
+# Use thin LTO for release builds (faster than fat LTO)
+lto = "thin"
+# Strip symbols for smaller binaries
+strip = true
+# Single codegen unit for better optimization
+codegen-units = 1
+
+# Uncomment to use a faster linker (requires installation)
+# macOS: brew install llvm (then use lld)
+# Linux: sudo apt install mold
+#
+# [target.x86_64-unknown-linux-gnu]
+# linker = "clang"
+# rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+#
+# [target.x86_64-apple-darwin]
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+#
+# [target.aarch64-apple-darwin]
+# rustflags = ["-C", "link-arg=-fuse-ld=lld"]

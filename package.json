@@ -2,20 +2,14 @@
   "name": "tether",
   "version": "0.1.0",
   "private": true,
-  "description": "Framework for building AI/ML desktop applications with Tauri, React, and Python",
+  "description": "Template for building AI/ML desktop applications with Tauri, React, and Python",
   "type": "module",
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean",
-    "typecheck": "turbo run typecheck",
-    "test": "turbo run test",
-    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,json,md}\""
   },
   "devDependencies": {
     "prettier": "^3.2.0",
-    "turbo": "^2.0.0",
     "typescript": "^5.4.0"
   },
   "packageManager": "pnpm@9.0.0",
@@ -35,6 +29,7 @@
     "ai",
     "ml",
     "llm",
-    "desktop"
+    "desktop",
+    "template"
   ]
 }

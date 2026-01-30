@@ -15,15 +15,18 @@ Before you begin, make sure you have the following installed:
 ### Platform-specific requirements
 
 #### macOS
+
 ```bash
 xcode-select --install
 ```
 
 #### Windows
+
 - Install [Microsoft Visual Studio C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
 - Install [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/)
 
 #### Linux
+
 ```bash
 # Ubuntu/Debian
 sudo apt update
@@ -42,6 +45,7 @@ npx create-tether-app my-app
 ```
 
 You'll be prompted to choose:
+
 1. **Project name** - The name of your project
 2. **ML backend** - Local LLM, OpenAI API, or Custom
 3. **Include example** - Whether to include a chat component example

@@ -1,10 +1,11 @@
-import { useBackendStatus } from './hooks/useApi';
-import { Chat } from './components/Chat';
-import { ModelStatus } from './components/ModelStatus';
-import './App.css';
+import { useBackendStatus } from "./hooks/useApi";
+import { Chat } from "./components/Chat";
+import { ModelStatus } from "./components/ModelStatus";
+import "./App.css";
 
 function App() {
-  const { status, health, modelInfo, error, retry, changeModel } = useBackendStatus();
+  const { status, health, modelInfo, error, retry, changeModel } =
+    useBackendStatus();
 
   return (
     <div className="app">
@@ -19,22 +20,24 @@ function App() {
       </header>
 
       <main className="app-main">
-        {status === 'connecting' && (
+        {status === "connecting" && (
           <div className="loading">
             <div className="spinner" />
             <p>Connecting to backend...</p>
           </div>
         )}
 
-        {status === 'loading-model' && (
+        {status === "loading-model" && (
           <div className="loading">
             <div className="spinner" />
             <p>Loading model...</p>
-            <p className="loading-hint">This may take a moment for large models</p>
+            <p className="loading-hint">
+              This may take a moment for large models
+            </p>
           </div>
         )}
 
-        {status === 'disconnected' && (
+        {status === "disconnected" && (
           <div className="error disconnected">
             <p>Connection lost</p>
             <p className="error-detail">The backend is no longer responding</p>
@@ -42,7 +45,7 @@ function App() {
           </div>
         )}
 
-        {status === 'error' && (
+        {status === "error" && (
           <div className="error">
             <p>Failed to connect</p>
             {error && <p className="error-detail">{error.message}</p>}
@@ -50,7 +53,7 @@ function App() {
           </div>
         )}
 
-        {status === 'connected' && <Chat />}
+        {status === "connected" && <Chat />}
       </main>
     </div>
   );

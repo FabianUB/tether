@@ -83,23 +83,14 @@ jobs:
       - name: Install Node dependencies
         run: pnpm install
 
-      - name: Install Python dependencies
-        working-directory: template/src-python
-        run: uv sync --extra build
-
       - name: Build CLI
         run: pnpm --filter create-tether-app build
-
-      - name: Build core
-        run: pnpm --filter @tether/core build
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: packages-${{ matrix.name }}
-          path: |
-            packages/create-tether-app/dist
-            packages/tether-core/dist
+          name: cli-${{ matrix.name }}
+          path: packages/create-tether-app/dist
 
   publish-npm:
     needs: build
@@ -123,38 +114,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build packages
-        run: pnpm build
+      - name: Build CLI
+        run: pnpm --filter create-tether-app build
 
       - name: Publish to npm
-        run: |
-          pnpm --filter create-tether-app publish --access public --no-git-checks
-          pnpm --filter @tether/core publish --access public --no-git-checks
+        run: pnpm --filter create-tether-app publish --access public --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-pypi:
-    needs: build
-    runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v3
-
-      - name: Build Python package
-        working-directory: packages/tether-python
-        run: uv build
-
-      - name: Publish to PyPI
-        working-directory: packages/tether-python
-        run: uv publish
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}

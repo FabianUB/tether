@@ -5,6 +5,7 @@ This guide covers building the React frontend for your Tether application. No Ru
 ## Overview
 
 The frontend is a standard React application using:
+
 - **React 18** - UI library
 - **Vite** - Build tool with fast HMR
 - **TypeScript** - Type safety
@@ -37,16 +38,16 @@ src/
 The `useBackendStatus` hook handles connecting to the Python backend:
 
 ```tsx
-import { useBackendStatus } from './hooks/useApi';
+import { useBackendStatus } from "./hooks/useApi";
 
 function App() {
   const { status, health, error, retry } = useBackendStatus();
 
-  if (status === 'connecting') {
+  if (status === "connecting") {
     return <div>Connecting to backend...</div>;
   }
 
-  if (status === 'error') {
+  if (status === "error") {
     return (
       <div>
         <p>Connection failed: {error?.message}</p>
@@ -55,7 +56,9 @@ function App() {
     );
   }
 
-  return <div>Connected! Model: {health?.model_loaded ? 'Ready' : 'Not loaded'}</div>;
+  return (
+    <div>Connected! Model: {health?.model_loaded ? "Ready" : "Not loaded"}</div>
+  );
 }
 ```
 
@@ -64,7 +67,7 @@ function App() {
 The `useChat` hook provides chat functionality:
 
 ```tsx
-import { useChat } from './hooks/useApi';
+import { useChat } from "./hooks/useApi";
 
 function ChatComponent() {
   const { messages, isLoading, error, sendMessage, clearMessages } = useChat();
@@ -73,7 +76,7 @@ function ChatComponent() {
     try {
       await sendMessage(text);
     } catch (err) {
-      console.error('Failed to send:', err);
+      console.error("Failed to send:", err);
     }
   };
 
@@ -97,7 +100,7 @@ The `useApi.ts` file exports TypeScript types for API communication:
 
 ```typescript
 interface ChatMessage {
-  role: 'user' | 'assistant' | 'system';
+  role: "user" | "assistant" | "system";
   content: string;
   timestamp?: number;
 }
@@ -114,11 +117,11 @@ interface ChatResponse {
   response: string;
   tokens_used?: number;
   model?: string;
-  finish_reason?: 'stop' | 'length' | 'error';
+  finish_reason?: "stop" | "length" | "error";
 }
 
 interface HealthResponse {
-  status: 'healthy' | 'unhealthy';
+  status: "healthy" | "unhealthy";
   model_loaded: boolean;
   version: string;
 }
@@ -130,11 +133,14 @@ You can make direct API calls using the fetch helper:
 
 ```typescript
 // In your component or hook
-const API_URL = 'http://localhost:8000';
+const API_URL = "http://localhost:8000";
 
-async function customApiCall<T>(path: string, options?: RequestInit): Promise<T> {
+async function customApiCall<T>(
+  path: string,
+  options?: RequestInit,
+): Promise<T> {
   const response = await fetch(`${API_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json' },
+    headers: { "Content-Type": "application/json" },
     ...options,
   });
 
@@ -146,9 +152,9 @@ async function customApiCall<T>(path: string, options?: RequestInit): Promise<T>
 }
 
 // Usage
-const data = await customApiCall<MyType>('/my-endpoint', {
-  method: 'POST',
-  body: JSON.stringify({ key: 'value' }),
+const data = await customApiCall<MyType>("/my-endpoint", {
+  method: "POST",
+  body: JSON.stringify({ key: "value" }),
 });
 ```
 
@@ -200,8 +206,8 @@ export function MyComponent({ title }: MyComponentProps) {
 3. Import in your component:
 
 ```tsx
-import { MyComponent } from './components/MyComponent';
-import './components/MyComponent.css';
+import { MyComponent } from "./components/MyComponent";
+import "./components/MyComponent.css";
 ```
 
 ## Tauri Integration (Optional)
@@ -209,13 +215,13 @@ import './components/MyComponent.css';
 While most communication happens via HTTP, you can also use Tauri's IPC:
 
 ```typescript
-import { invoke } from '@tauri-apps/api/core';
+import { invoke } from "@tauri-apps/api/core";
 
 // Get the API port (useful if using dynamic ports)
-const port = await invoke<number>('get_api_port');
+const port = await invoke<number>("get_api_port");
 
 // Restart the backend
-await invoke('restart_backend');
+await invoke("restart_backend");
 ```
 
 ## Best Practices

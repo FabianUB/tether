@@ -5,6 +5,7 @@ This guide covers building the Python backend for your Tether application. No Ru
 ## Overview
 
 The backend is a FastAPI application that:
+
 - Provides REST API endpoints for the frontend
 - Manages LLM inference (local or API-based)
 - Gets bundled as a standalone binary for distribution
@@ -48,6 +49,7 @@ The API will be available at `http://localhost:8000`.
 ### API Documentation
 
 FastAPI automatically generates API docs:
+
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
 
@@ -194,17 +196,17 @@ backend = os.getenv("TETHER_LLM_BACKEND", "local")
 
 ### Available Settings
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `TETHER_HOST` | `127.0.0.1` | Server host |
-| `TETHER_PORT` | `8000` | Server port |
-| `TETHER_LLM_BACKEND` | `local` | LLM backend (local, openai, mock) |
-| `TETHER_MODEL_PATH` | - | Path to local model file |
-| `TETHER_CONTEXT_LENGTH` | `4096` | Context window size |
-| `TETHER_DEFAULT_TEMPERATURE` | `0.7` | Default sampling temperature |
-| `TETHER_DEFAULT_MAX_TOKENS` | `1024` | Default max tokens |
-| `OPENAI_API_KEY` | - | OpenAI API key |
-| `TETHER_OPENAI_MODEL` | `gpt-4o-mini` | OpenAI model name |
+| Variable                     | Default       | Description                       |
+| ---------------------------- | ------------- | --------------------------------- |
+| `TETHER_HOST`                | `127.0.0.1`   | Server host                       |
+| `TETHER_PORT`                | `8000`        | Server port                       |
+| `TETHER_LLM_BACKEND`         | `local`       | LLM backend (local, openai, mock) |
+| `TETHER_MODEL_PATH`          | -             | Path to local model file          |
+| `TETHER_CONTEXT_LENGTH`      | `4096`        | Context window size               |
+| `TETHER_DEFAULT_TEMPERATURE` | `0.7`         | Default sampling temperature      |
+| `TETHER_DEFAULT_MAX_TOKENS`  | `1024`        | Default max tokens                |
+| `OPENAI_API_KEY`             | -             | OpenAI API key                    |
+| `TETHER_OPENAI_MODEL`        | `gpt-4o-mini` | OpenAI model name                 |
 
 ## Building for Production
 
@@ -220,6 +222,7 @@ This creates a binary in `src-tauri/binaries/api-{target}`.
 ### Binary Naming
 
 Tauri requires binaries to be named with the target triple:
+
 - macOS ARM: `api-aarch64-apple-darwin`
 - macOS Intel: `api-x86_64-apple-darwin`
 - Windows: `api-x86_64-pc-windows-msvc.exe`
