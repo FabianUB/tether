@@ -5,13 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:py": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
+    "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:py\"",
     "build": "tsc && vite build",
     "build:all": "pnpm python:build && pnpm build",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "python:dev": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
     "python:build": "cd backend && uv sync --extra build && uv run python scripts/build.py"
   },
   "dependencies": {
@@ -25,6 +26,7 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",
+    "concurrently": "^9.0.0",
     "typescript": "^5.4.0",
     "vite": "^5.4.0"
   }
