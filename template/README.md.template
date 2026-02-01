@@ -77,7 +77,9 @@ cp .env.example .env
    TETHER_MODEL_PATH=./models/your-model.gguf
    ```
 
-### OpenAI API
+### OpenAI API (Experimental)
+
+> **Note:** OpenAI support is experimental and not thoroughly tested.
 
 1. Get an API key from [OpenAI](https://platform.openai.com/)
 2. Set in `.env`:
@@ -85,6 +87,18 @@ cp .env.example .env
    TETHER_LLM_BACKEND=openai
    OPENAI_API_KEY=sk-...
    ```
+
+## Supported Models
+
+| Backend | Models | Notes |
+|---------|--------|-------|
+| **Ollama** | llama3.2, gemma3, qwen3, deepseek-r1, mistral, etc. | See [ollama.com/library](https://ollama.com/library) |
+| **Local LLM** | Any GGUF model | See [Hugging Face GGUF models](https://huggingface.co/models?library=gguf) |
+| **OpenAI** | gpt-4o, gpt-4o-mini, gpt-4-turbo | Experimental |
+
+### Thinking Models
+
+Models with reasoning capabilities (like `deepseek-r1`, `qwen3`) support "thinking mode" which shows the model's reasoning process. This is automatically enabled when available.
 
 ## Project Structure
 
