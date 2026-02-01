@@ -127,3 +127,84 @@ export function checkCommandExists(command: string): boolean {
     return false;
   }
 }
+
+export function getCommandVersion(
+  command: string,
+  versionFlag = "--version",
+): string | null {
+  try {
+    const output = execSync(`${command} ${versionFlag}`, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    });
+    // Extract version number (first match of x.y.z pattern)
+    const match = output.match(/(\d+\.\d+(\.\d+)?)/);
+    return match ? match[1] : output.trim().split("\n")[0];
+  } catch {
+    return null;
+  }
+}
+
+export interface DependencyCheck {
+  name: string;
+  command: string;
+  installed: boolean;
+  version: string | null;
+  required: string;
+  installUrl: string;
+}
+
+export function checkEnvironment(): DependencyCheck[] {
+  const checks: DependencyCheck[] = [
+    {
+      name: "Node.js",
+      command: "node",
+      installed: checkCommandExists("node"),
+      version: getCommandVersion("node", "-v"),
+      required: "18+",
+      installUrl: "https://nodejs.org/",
+    },
+    {
+      name: "pnpm",
+      command: "pnpm",
+      installed: checkCommandExists("pnpm"),
+      version: getCommandVersion("pnpm", "-v"),
+      required: "8+",
+      installUrl: "https://pnpm.io/installation",
+    },
+    {
+      name: "Python",
+      command: "python3",
+      installed: checkCommandExists("python3"),
+      version: getCommandVersion("python3", "--version"),
+      required: "3.11+",
+      installUrl: "https://www.python.org/",
+    },
+    {
+      name: "uv",
+      command: "uv",
+      installed: checkCommandExists("uv"),
+      version: getCommandVersion("uv", "--version"),
+      required: "latest",
+      installUrl: "https://docs.astral.sh/uv/",
+    },
+    {
+      name: "Rust (cargo)",
+      command: "cargo",
+      installed: checkCommandExists("cargo"),
+      version: getCommandVersion("cargo", "--version"),
+      required: "latest",
+      installUrl: "https://rustup.rs/",
+    },
+    {
+      name: "Ollama",
+      command: "ollama",
+      installed: checkCommandExists("ollama"),
+      version: getCommandVersion("ollama", "--version"),
+      required: "optional",
+      installUrl: "https://ollama.com/",
+    },
+  ];
+
+  return checks;
+}

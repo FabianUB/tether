@@ -8,6 +8,7 @@ export interface PromptAnswers {
   projectName: string;
   template: "local-llm" | "ollama" | "openai" | "custom";
   includeExample: boolean;
+  useTailwind: boolean;
 }
 
 export async function promptForOptions(
@@ -65,6 +66,12 @@ export async function promptForOptions(
       message: "Include example chat component?",
       default: true,
     },
+    {
+      type: "confirm",
+      name: "useTailwind",
+      message: "Add Tailwind CSS for styling?",
+      default: false,
+    },
   );
 
   const answers = await inquirer.prompt(questions);
@@ -73,5 +80,6 @@ export async function promptForOptions(
     projectName: answers.projectName || "",
     template: answers.template || "ollama",
     includeExample: answers.includeExample ?? true,
+    useTailwind: answers.useTailwind ?? false,
   };
 }

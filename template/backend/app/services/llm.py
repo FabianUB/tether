@@ -360,13 +360,24 @@ class OllamaService(LLMService):
             "model": self._model,
             "messages": messages,
             "stream": False,
-            "think": think,  # Enable thinking mode
             "options": {"temperature": temperature},
         }
         if max_tokens:
             payload["options"]["num_predict"] = max_tokens
 
+        # Only include think parameter if enabled
+        # Some models don't support thinking and will error if it's sent
+        if think:
+            payload["think"] = True
+
         response = await self._client.post("/api/chat", json=payload)
+
+        # If request fails and thinking was enabled, retry without it
+        # Some models don't support thinking mode and return 400
+        if not response.is_success and think:
+            payload.pop("think", None)
+            response = await self._client.post("/api/chat", json=payload)
+
         response.raise_for_status()
 
         data = response.json()
