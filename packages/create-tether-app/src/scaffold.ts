@@ -181,17 +181,25 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
 
   if (options.useTailwind) {
     console.log(
-      chalk.dim("  Tailwind CSS is configured. Use utility classes in your components."),
+      chalk.dim(
+        "  Tailwind CSS is configured. Use utility classes in your components.",
+      ),
     );
     console.log();
   }
 }
 
-async function setupTailwind(targetDir: string, verbose: boolean): Promise<void> {
+async function setupTailwind(
+  targetDir: string,
+  verbose: boolean,
+): Promise<void> {
   const templateDir = getTemplateDir();
 
   // Copy tailwind.config.js (remove .template extension)
-  const tailwindTemplatePath = path.join(templateDir, "tailwind.config.js.template");
+  const tailwindTemplatePath = path.join(
+    templateDir,
+    "tailwind.config.js.template",
+  );
   const tailwindTargetPath = path.join(targetDir, "tailwind.config.js");
 
   if (await fs.pathExists(tailwindTemplatePath)) {
@@ -200,7 +208,10 @@ async function setupTailwind(targetDir: string, verbose: boolean): Promise<void>
   }
 
   // Copy postcss.config.js (remove .template extension)
-  const postcssTemplatePath = path.join(templateDir, "postcss.config.js.template");
+  const postcssTemplatePath = path.join(
+    templateDir,
+    "postcss.config.js.template",
+  );
   const postcssTargetPath = path.join(targetDir, "postcss.config.js");
 
   if (await fs.pathExists(postcssTemplatePath)) {
@@ -291,7 +302,10 @@ async function customizeForTemplate(
   }
 }
 
-async function removeTailwindTemplateFiles(targetDir: string, verbose: boolean): Promise<void> {
+async function removeTailwindTemplateFiles(
+  targetDir: string,
+  verbose: boolean,
+): Promise<void> {
   const tailwindConfigPath = path.join(targetDir, "tailwind.config.js");
   const postcssConfigPath = path.join(targetDir, "postcss.config.js");
 

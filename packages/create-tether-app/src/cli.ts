@@ -1,7 +1,11 @@
 import { Command } from "commander";
 import { scaffoldProject } from "./scaffold.js";
 import { promptForOptions } from "./prompts.js";
-import { validateProjectName, getPackageVersion, checkEnvironment } from "./utils.js";
+import {
+  validateProjectName,
+  getPackageVersion,
+  checkEnvironment,
+} from "./utils.js";
 import chalk from "chalk";
 
 export interface CliOptions {
@@ -24,7 +28,8 @@ const LLM_TEMPLATES = [
   {
     name: "ollama",
     description: "Run models locally via Ollama (Recommended)",
-    details: "Requires Ollama to be installed and running. Pull models with 'ollama pull'.",
+    details:
+      "Requires Ollama to be installed and running. Pull models with 'ollama pull'.",
   },
   {
     name: "local-llm",
@@ -34,7 +39,8 @@ const LLM_TEMPLATES = [
   {
     name: "openai",
     description: "Use OpenAI API (requires API key)",
-    details: "Uses GPT models via the OpenAI API. Requires OPENAI_API_KEY env var.",
+    details:
+      "Uses GPT models via the OpenAI API. Requires OPENAI_API_KEY env var.",
   },
   {
     name: "custom",
@@ -130,9 +136,10 @@ LLM Backends:
               ? chalk.yellow("○")
               : chalk.red("✗");
           const version = dep.version ? chalk.dim(` (${dep.version})`) : "";
-          const required = dep.required === "optional"
-            ? chalk.dim(" [optional]")
-            : chalk.dim(` [${dep.required}]`);
+          const required =
+            dep.required === "optional"
+              ? chalk.dim(" [optional]")
+              : chalk.dim(` [${dep.required}]`);
 
           console.log(`  ${status} ${dep.name}${version}${required}`);
 
@@ -146,7 +153,11 @@ LLM Backends:
         if (allGood) {
           console.log(chalk.green("All required dependencies are installed!"));
         } else {
-          console.log(chalk.yellow("Some dependencies are missing. Install them before creating a project."));
+          console.log(
+            chalk.yellow(
+              "Some dependencies are missing. Install them before creating a project.",
+            ),
+          );
         }
         console.log();
         return;
@@ -159,7 +170,9 @@ LLM Backends:
 
       // Run dependency check and warn about missing deps
       const checks = checkEnvironment();
-      const missing = checks.filter(d => !d.installed && d.required !== "optional");
+      const missing = checks.filter(
+        (d) => !d.installed && d.required !== "optional",
+      );
       if (missing.length > 0) {
         console.log(chalk.yellow("Warning: Some dependencies are missing:"));
         for (const dep of missing) {
@@ -255,7 +268,11 @@ LLM Backends:
           }
           console.log();
           console.log("Would install dependencies:");
-          console.log(chalk.dim(`  react, react-dom, vite, typescript, @tauri-apps/cli, ...`));
+          console.log(
+            chalk.dim(
+              `  react, react-dom, vite, typescript, @tauri-apps/cli, ...`,
+            ),
+          );
           if (useTailwind) {
             console.log(chalk.dim(`  tailwindcss, postcss, autoprefixer`));
           }
@@ -288,13 +305,19 @@ LLM Backends:
                 "  Try a different project name or delete the existing directory.",
               ),
             );
-          } else if (error.message.includes("EACCES") || error.message.includes("permission")) {
+          } else if (
+            error.message.includes("EACCES") ||
+            error.message.includes("permission")
+          ) {
             console.log(
               chalk.dim(
                 "  Permission denied. Try running with sudo or check directory permissions.",
               ),
             );
-          } else if (error.message.includes("uv not found") || error.message.includes("uv")) {
+          } else if (
+            error.message.includes("uv not found") ||
+            error.message.includes("uv")
+          ) {
             console.log(
               chalk.dim(
                 "  Install uv from: https://docs.astral.sh/uv/getting-started/installation/",

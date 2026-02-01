@@ -128,9 +128,15 @@ export function checkCommandExists(command: string): boolean {
   }
 }
 
-export function getCommandVersion(command: string, versionFlag = "--version"): string | null {
+export function getCommandVersion(
+  command: string,
+  versionFlag = "--version",
+): string | null {
   try {
-    const output = execSync(`${command} ${versionFlag}`, { encoding: "utf-8", stdio: ["pipe", "pipe", "ignore"] });
+    const output = execSync(`${command} ${versionFlag}`, {
+      encoding: "utf-8",
+      stdio: ["pipe", "pipe", "ignore"],
+    });
     // Extract version number (first match of x.y.z pattern)
     const match = output.match(/(\d+\.\d+(\.\d+)?)/);
     return match ? match[1] : output.trim().split("\n")[0];
