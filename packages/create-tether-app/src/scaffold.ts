@@ -149,9 +149,9 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
   console.log(chalk.cyan("    pnpm dev:py       # Start Python backend"));
   console.log(chalk.cyan("    pnpm dev:all      # Start both"));
   console.log();
-  console.log("  To build for production:");
+  console.log("  To build the desktop app:");
   console.log();
-  console.log(chalk.cyan("    pnpm build:all"));
+  console.log(chalk.cyan("    pnpm build:app"));
   console.log();
 
   if (options.template === "ollama") {

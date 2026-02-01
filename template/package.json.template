@@ -8,7 +8,7 @@
     "dev:py": "cd backend && uv run uvicorn app.main:app --reload --port 8000",
     "dev:all": "concurrently \"pnpm dev\" \"pnpm dev:py\"",
     "build": "tsc && vite build",
-    "build:all": "pnpm python:build && pnpm build",
+    "build:app": "pnpm python:build && pnpm build && pnpm tauri build",
     "preview": "vite preview",
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
