@@ -1,7 +1,7 @@
 import { Command } from "commander";
 import { scaffoldProject } from "./scaffold.js";
 import { promptForOptions } from "./prompts.js";
-import { validateProjectName, getPackageVersion } from "./utils.js";
+import { validateProjectName, getPackageVersion, checkEnvironment } from "./utils.js";
 import chalk from "chalk";
 
 export interface CliOptions {
@@ -17,6 +17,7 @@ export interface CliOptions {
   tailwind?: boolean; // --tailwind or --no-tailwind
   verbose?: boolean;
   listTemplates?: boolean;
+  check?: boolean;
 }
 
 const LLM_TEMPLATES = [
@@ -66,6 +67,7 @@ export function createCli(): Command {
     .option("--no-tailwind", "Skip Tailwind CSS setup")
     .option("-v, --verbose", "Show detailed output")
     .option("--list-templates", "List available LLM templates")
+    .option("--check", "Check if all required dependencies are installed")
     .addHelpText(
       "after",
       `
@@ -87,6 +89,9 @@ Examples:
 
   ${chalk.cyan("npx create-tether-app --list-templates")}
     Show available LLM backends
+
+  ${chalk.cyan("npx create-tether-app --check")}
+    Check if all dependencies are installed
 
 LLM Backends:
   ollama      Run models locally via Ollama (recommended)
@@ -110,10 +115,58 @@ LLM Backends:
         return;
       }
 
+      // Handle --check
+      if (options.check) {
+        console.log();
+        console.log(chalk.bold("Checking dependencies..."));
+        console.log();
+        const checks = checkEnvironment();
+        let allGood = true;
+
+        for (const dep of checks) {
+          const status = dep.installed
+            ? chalk.green("✓")
+            : dep.required === "optional"
+              ? chalk.yellow("○")
+              : chalk.red("✗");
+          const version = dep.version ? chalk.dim(` (${dep.version})`) : "";
+          const required = dep.required === "optional"
+            ? chalk.dim(" [optional]")
+            : chalk.dim(` [${dep.required}]`);
+
+          console.log(`  ${status} ${dep.name}${version}${required}`);
+
+          if (!dep.installed && dep.required !== "optional") {
+            allGood = false;
+            console.log(chalk.dim(`      Install: ${dep.installUrl}`));
+          }
+        }
+
+        console.log();
+        if (allGood) {
+          console.log(chalk.green("All required dependencies are installed!"));
+        } else {
+          console.log(chalk.yellow("Some dependencies are missing. Install them before creating a project."));
+        }
+        console.log();
+        return;
+      }
+
       console.log();
       console.log(chalk.bold.cyan("  Tether"));
       console.log(chalk.dim("  Create AI/ML desktop applications"));
       console.log();
+
+      // Run dependency check and warn about missing deps
+      const checks = checkEnvironment();
+      const missing = checks.filter(d => !d.installed && d.required !== "optional");
+      if (missing.length > 0) {
+        console.log(chalk.yellow("Warning: Some dependencies are missing:"));
+        for (const dep of missing) {
+          console.log(chalk.yellow(`  - ${dep.name}: ${dep.installUrl}`));
+        }
+        console.log();
+      }
 
       try {
         // Handle aliases
