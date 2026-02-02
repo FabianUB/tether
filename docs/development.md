@@ -6,16 +6,37 @@ Tips for faster development builds and better developer experience.
 
 Rust/Tauri builds can be slow, especially the first build. Here's how to speed things up.
 
-### First Build vs Incremental
+### What's Already Configured
 
-- **First build**: Downloads and compiles all dependencies. This is unavoidable.
-- **Incremental builds**: Only recompiles changed code. Much faster.
+The included `.cargo/config.toml` has these optimizations enabled by default:
 
-The included `.cargo/config.toml` is already configured for fast incremental builds.
+| Setting | Effect | Platforms |
+|---------|--------|-----------|
+| `opt-level = 0` | Skip optimizations in dev | All |
+| `incremental = true` | Only recompile changed code | All |
+| `codegen-units = 256` | Parallelize compilation | All |
+| `split-debuginfo = unpacked` | Faster linking | macOS, Linux (auto-detected) |
+| Dependencies at `opt-level = 2` | Pre-optimize deps | All |
 
-### Using sccache (Recommended)
+Platform-specific settings are auto-applied based on your target architecture.
 
-sccache caches compiled artifacts across projects, dramatically speeding up builds.
+### Quick Wins (No Installation)
+
+These are already enabled. Just make sure you're running **debug builds** during development:
+
+```bash
+# Good - uses dev profile (fast)
+pnpm tauri:dev
+cargo build
+
+# Slow - use only for final builds
+pnpm build:app
+cargo build --release
+```
+
+### sccache (Highly Recommended)
+
+sccache caches compiled artifacts across **all** your Rust projects. After installing, subsequent builds of any project reuse cached artifacts.
 
 **Install:**
 
@@ -23,25 +44,26 @@ sccache caches compiled artifacts across projects, dramatically speeding up buil
 # macOS
 brew install sccache
 
-# Linux
-cargo install sccache
-
-# Windows
+# Linux/Windows
 cargo install sccache
 ```
 
-**Enable:**
+**Enable permanently:**
 
 ```bash
-# Add to your shell profile (.bashrc, .zshrc, etc.)
+# Add to your shell profile (~/.zshrc, ~/.bashrc, etc.)
 export RUSTC_WRAPPER=sccache
 ```
 
-After enabling, your second build of any Rust project will be much faster.
+**Verify it's working:**
 
-### Using a Faster Linker
+```bash
+sccache --show-stats
+```
 
-The default linker is slow. Alternative linkers can cut link times significantly.
+### Faster Linker (Optional)
+
+Linking is often the slowest part of incremental builds. A faster linker can cut build times by 30-50%.
 
 **macOS (lld via LLVM):**
 
@@ -49,7 +71,12 @@ The default linker is slow. Alternative linkers can cut link times significantly
 brew install llvm
 ```
 
-Then uncomment the macOS section in `src-tauri/.cargo/config.toml`.
+Then update the rustflags in `src-tauri/.cargo/config.toml` for your architecture:
+
+```toml
+[target.aarch64-apple-darwin]  # or x86_64-apple-darwin for Intel
+rustflags = ["-C", "split-debuginfo=unpacked", "-C", "link-arg=-fuse-ld=/opt/homebrew/opt/llvm/bin/ld64.lld"]
+```
 
 **Linux (mold):**
 
@@ -64,18 +91,27 @@ sudo dnf install mold
 sudo pacman -S mold
 ```
 
-Then uncomment the Linux section in `src-tauri/.cargo/config.toml`.
+Then update the rustflags in `src-tauri/.cargo/config.toml`:
+
+```toml
+[target.x86_64-unknown-linux-gnu]  # or aarch64-unknown-linux-gnu for ARM
+rustflags = ["-C", "split-debuginfo=unpacked", "-C", "link-arg=-fuse-ld=mold"]
+```
+
+**Windows:**
+
+Windows uses the MSVC linker by default. Alternative linkers are not commonly used.
 
 ### Expected Build Times
 
-With optimizations enabled:
+| Build Type | First Build | With sccache | Incremental |
+|------------|-------------|--------------|-------------|
+| Debug | 2-5 min | 30-60 sec* | 5-30 sec |
+| Release | 5-10 min | 2-4 min* | 1-3 min |
 
-| Build Type | First Build | Incremental |
-| ---------- | ----------- | ----------- |
-| Debug      | 2-5 min     | 5-30 sec    |
-| Release    | 5-10 min    | 1-3 min     |
+*After first build when cache is warm.
 
-Times vary based on hardware. M1/M2 Macs and modern Linux machines are typically faster.
+Times vary based on hardware. Apple Silicon Macs are typically 2-3x faster than Intel.
 
 ## Frontend Development
 

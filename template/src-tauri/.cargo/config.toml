@@ -1,38 +1,66 @@
 # Cargo configuration for faster development builds
 # See docs/development.md for more optimization tips
 
+# =============================================================================
+# PROFILE SETTINGS (apply to all platforms)
+# =============================================================================
+
 [profile.dev]
-# Skip optimizations for faster compile times
-opt-level = 0
-# Disable LTO for dev builds
-lto = false
-# Enable incremental compilation
-incremental = true
-# Reduce codegen units for faster incremental builds
-codegen-units = 256
+opt-level = 0        # Skip optimizations (faster compile)
+lto = false          # No link-time optimization
+incremental = true   # Incremental compilation
+codegen-units = 256  # More parallelism (faster compile, slower runtime)
 
 [profile.dev.package."*"]
-# Optimize dependencies even in dev mode (they rarely change)
-opt-level = 2
+opt-level = 2        # Optimize dependencies (they rarely change)
 
 [profile.release]
-# Use thin LTO for release builds (faster than fat LTO)
-lto = "thin"
-# Strip symbols for smaller binaries
-strip = true
-# Single codegen unit for better optimization
-codegen-units = 1
+lto = "thin"         # Thin LTO (balance of speed and size)
+strip = true         # Strip debug symbols
+codegen-units = 1    # Better optimization
 
-# Uncomment to use a faster linker (requires installation)
-# macOS: brew install llvm (then use lld)
-# Linux: sudo apt install mold
+# =============================================================================
+# PLATFORM-SPECIFIC OPTIMIZATIONS (auto-applied based on target)
+# =============================================================================
+
+# macOS - Apple Silicon
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "split-debuginfo=unpacked"]
+
+# macOS - Intel
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "split-debuginfo=unpacked"]
+
+# Linux - x86_64
+[target.x86_64-unknown-linux-gnu]
+rustflags = ["-C", "split-debuginfo=unpacked"]
+
+# Linux - ARM64 (Raspberry Pi, AWS Graviton, etc.)
+[target.aarch64-unknown-linux-gnu]
+rustflags = ["-C", "split-debuginfo=unpacked"]
+
+# Windows - No split-debuginfo (not supported), uses default linker
+# [target.x86_64-pc-windows-msvc]
+# Uses default settings
+
+# =============================================================================
+# OPTIONAL: FASTER LINKERS
+# =============================================================================
+# Uncomment your platform section below AND modify the rustflags above
+# to combine with split-debuginfo.
 #
-# [target.x86_64-unknown-linux-gnu]
-# linker = "clang"
-# rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+# macOS (requires: brew install llvm):
+#   Add to aarch64-apple-darwin or x86_64-apple-darwin above:
+#   rustflags = ["-C", "split-debuginfo=unpacked", "-C", "link-arg=-fuse-ld=/opt/homebrew/opt/llvm/bin/ld64.lld"]
 #
-# [target.x86_64-apple-darwin]
-# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+# Linux (requires: sudo apt install mold OR sudo apt install lld):
+#   Add to x86_64-unknown-linux-gnu above:
+#   rustflags = ["-C", "split-debuginfo=unpacked", "-C", "link-arg=-fuse-ld=mold"]
 #
-# [target.aarch64-apple-darwin]
-# rustflags = ["-C", "link-arg=-fuse-ld=lld"]
+# =============================================================================
+# SCCACHE (Recommended for all platforms)
+# =============================================================================
+# Caches compilation results across all Rust projects.
+# Install: brew install sccache (macOS) or cargo install sccache
+# Enable:  export RUSTC_WRAPPER=sccache (add to shell profile)
+# =============================================================================
