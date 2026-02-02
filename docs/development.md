@@ -10,13 +10,13 @@ Rust/Tauri builds can be slow, especially the first build. Here's how to speed t
 
 The included `.cargo/config.toml` has these optimizations enabled by default:
 
-| Setting | Effect | Platforms |
-|---------|--------|-----------|
-| `opt-level = 0` | Skip optimizations in dev | All |
-| `incremental = true` | Only recompile changed code | All |
-| `codegen-units = 256` | Parallelize compilation | All |
-| `split-debuginfo = unpacked` | Faster linking | macOS, Linux (auto-detected) |
-| Dependencies at `opt-level = 2` | Pre-optimize deps | All |
+| Setting                         | Effect                      | Platforms                    |
+| ------------------------------- | --------------------------- | ---------------------------- |
+| `opt-level = 0`                 | Skip optimizations in dev   | All                          |
+| `incremental = true`            | Only recompile changed code | All                          |
+| `codegen-units = 256`           | Parallelize compilation     | All                          |
+| `split-debuginfo = unpacked`    | Faster linking              | macOS, Linux (auto-detected) |
+| Dependencies at `opt-level = 2` | Pre-optimize deps           | All                          |
 
 Platform-specific settings are auto-applied based on your target architecture.
 
@@ -105,11 +105,11 @@ Windows uses the MSVC linker by default. Alternative linkers are not commonly us
 ### Expected Build Times
 
 | Build Type | First Build | With sccache | Incremental |
-|------------|-------------|--------------|-------------|
-| Debug | 2-5 min | 30-60 sec* | 5-30 sec |
-| Release | 5-10 min | 2-4 min* | 1-3 min |
+| ---------- | ----------- | ------------ | ----------- |
+| Debug      | 2-5 min     | 30-60 sec\*  | 5-30 sec    |
+| Release    | 5-10 min    | 2-4 min\*    | 1-3 min     |
 
-*After first build when cache is warm.
+\*After first build when cache is warm.
 
 Times vary based on hardware. Apple Silicon Macs are typically 2-3x faster than Intel.
 

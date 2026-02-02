@@ -2,7 +2,7 @@
 
 A ready-to-use template for building AI/ML desktop applications.
 
-**Stack:** React +  Python (FastAPI) + Tauri
+**Stack:** React + Python (FastAPI) + Tauri
 
 ## Core Principles
 
