@@ -1,8 +1,8 @@
 # Tether
 
-A ready-to-use template for building AI/ML desktop applications. Clone it, customize it, ship it.
+A ready-to-use template for building AI/ML desktop applications.
 
-**Stack:** React + FastAPI + Tauri
+**Stack:** React + Python (FastAPI) + Tauri
 
 ## Core Principles
 
@@ -68,15 +68,6 @@ my-app/
 - Image/vision support for multimodal models
 - Thinking mode for reasoning models
 - Automatic port allocation and process management
-
-## Customization
-
-This is **your** code. Fork it, modify it, delete what you don't need:
-
-- Swap React for Vue or Svelte
-- Replace FastAPI with Flask
-- Add your own ML models and endpoints
-- Change the UI completely
 
 ## License
 

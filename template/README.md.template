@@ -31,22 +31,23 @@ Open http://localhost:5173 in your browser.
 
 ### Development
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start frontend only (Vite) |
-| `pnpm dev:py` | Start Python backend only |
-| `pnpm dev:all` | Start both frontend and backend |
-| `pnpm tauri:dev` | Start as desktop app (with hot reload) |
+| Command | Description | Port |
+|---------|-------------|------|
+| `pnpm dev` | Start frontend only (Vite) | 5173 |
+| `pnpm dev:py` | Start Python backend only | 8000 |
+| `pnpm dev:all` | Start both frontend and backend | 5173 + 8000 |
+| `pnpm tauri:dev` | Start as desktop app (with hot reload) | — |
 
 ### Building
 
 | Command | Description |
 |---------|-------------|
-| `pnpm build` | Build frontend |
-| `pnpm python:build` | Build Python backend (PyInstaller) |
-| `pnpm build:app` | Build complete desktop app |
+| `pnpm build` | Build frontend only (→ `dist/`) |
+| `pnpm python:build` | Build Python sidecar (→ `binaries/`) |
+| `pnpm tauri:build` | Build Tauri shell (requires frontend + sidecar) |
+| `pnpm build:app` | **Build everything** (runs all three above in sequence) |
 
-The built app will be in `src-tauri/target/release/bundle/`.
+The final app will be in `src-tauri/target/release/bundle/`.
 
 ## Configuration
 
