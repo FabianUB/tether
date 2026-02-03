@@ -552,6 +552,7 @@ import {
 interface TrainingResult {
   task_type: string;
   metrics: Record<string, number>;
+  feature_names: string[];
   feature_importance: { feature: string; importance: number }[];
   train_samples: number;
   test_samples: number;
@@ -787,7 +788,8 @@ function App() {
             suggestedTargets={analysis.suggested_targets}
             onTrained={(result) => {
               setModelReady(true);
-              setFeatureNames(result.feature_importance.map((f) => f.feature));
+              // Use original feature names (not transformed ones from feature_importance)
+              setFeatureNames(result.feature_names);
             }}
           />
         </section>

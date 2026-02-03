@@ -57,8 +57,6 @@ Create `backend/app/services/vectorstore.py`:
 from pathlib import Path
 from typing import Optional
 
-import chromadb
-from chromadb.config import Settings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.document_loaders import PyPDFLoader, TextLoader
 from langchain_community.embeddings import HuggingFaceEmbeddings
@@ -137,10 +135,9 @@ Create `backend/app/routes/rag.py`:
 import tempfile
 from pathlib import Path
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
+from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from pydantic import BaseModel
 
-from app.services.llm import get_llm_service
 from app.services.vectorstore import VectorStoreService
 
 router = APIRouter(prefix="/rag", tags=["rag"])
@@ -187,10 +184,13 @@ async def upload_document(file: UploadFile = File(...)) -> dict:
 
 
 @router.post("/query", response_model=QueryResponse)
-async def query_documents(request: QueryRequest) -> QueryResponse:
+async def query_documents(
+    body: QueryRequest,
+    request: Request,
+) -> QueryResponse:
     """Ask a question about uploaded documents."""
     # Search for relevant chunks
-    results = vectorstore.search(request.question, k=request.num_results)
+    results = vectorstore.search(body.question, k=body.num_results)
 
     if not results:
         return QueryResponse(
@@ -203,8 +203,11 @@ async def query_documents(request: QueryRequest) -> QueryResponse:
         f"[Source {i+1}]: {r['content']}" for i, r in enumerate(results)
     )
 
-    # Generate answer using LLM
-    llm = get_llm_service()
+    # Generate answer using the app's LLM service
+    llm_service = request.app.state.llm_service
+    if not llm_service or not llm_service.is_ready():
+        raise HTTPException(503, "LLM service not available")
+
     prompt = f"""Answer the question based on the following context.
 If the context doesn't contain enough information, say so.
 Cite your sources using [Source N] notation.
@@ -212,11 +215,11 @@ Cite your sources using [Source N] notation.
 Context:
 {context}
 
-Question: {request.question}
+Question: {body.question}
 
 Answer:"""
 
-    answer = await llm.complete(prompt)
+    answer = await llm_service.complete(prompt)
 
     return QueryResponse(answer=answer, sources=results)
 
@@ -292,7 +295,7 @@ export function DocumentUpload({
 
       setUploading(false);
     },
-    [apiUrl, onUploadComplete]
+    [apiUrl, onUploadComplete],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -445,6 +448,7 @@ export function RAGChat({ apiUrl }: RAGChatProps) {
 ### 3. Usage in App
 
 ```tsx
+import { useState } from "react";
 import { DocumentUpload } from "./components/DocumentUpload";
 import { RAGChat } from "./components/RAGChat";
 
@@ -465,9 +469,7 @@ function App() {
           }}
         />
         {documents.length > 0 && (
-          <p style={{ marginTop: "1rem" }}>
-            Indexed: {documents.join(", ")}
-          </p>
+          <p style={{ marginTop: "1rem" }}>Indexed: {documents.join(", ")}</p>
         )}
       </section>
 
@@ -498,11 +500,11 @@ text_splitter = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=40
 
 The recipe uses `all-MiniLM-L6-v2` (fast, small). Alternatives:
 
-| Model | Size | Quality | Speed |
-|-------|------|---------|-------|
-| `all-MiniLM-L6-v2` | 80MB | Good | Fast |
-| `all-mpnet-base-v2` | 420MB | Better | Medium |
-| `instructor-large` | 1.3GB | Best | Slow |
+| Model               | Size  | Quality | Speed  |
+| ------------------- | ----- | ------- | ------ |
+| `all-MiniLM-L6-v2`  | 80MB  | Good    | Fast   |
+| `all-mpnet-base-v2` | 420MB | Better  | Medium |
+| `instructor-large`  | 1.3GB | Best    | Slow   |
 
 ### Persistence
 

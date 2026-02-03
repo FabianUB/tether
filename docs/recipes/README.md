@@ -4,9 +4,9 @@ Step-by-step guides for extending your Tether app with common AI/ML features.
 
 ## Available Recipes
 
-| Recipe | Category | Description |
-|--------|----------|-------------|
-| [RAG: Document Q&A](./rag-document-qa.md) | LLM | Chat with your PDFs and documents |
+| Recipe                                        | Category   | Description                                |
+| --------------------------------------------- | ---------- | ------------------------------------------ |
+| [RAG: Document Q&A](./rag-document-qa.md)     | LLM        | Chat with your PDFs and documents          |
 | [Tabular Prediction](./tabular-prediction.md) | Classic ML | Train models on CSV data with scikit-learn |
 
 ## Coming Soon
