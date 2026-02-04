@@ -56,6 +56,9 @@ Thumbs.db
 # Test artifacts
 test-app/
 
+# npm publish artifacts (copied template)
+packages/create-tether-app/template/
+
 # Models (too large)
 *.gguf
 models/
