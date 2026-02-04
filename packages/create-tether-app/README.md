@@ -10,18 +10,18 @@ npx create-tether-app my-app
 
 ## Options
 
-| Flag | Description |
-|------|-------------|
+| Flag               | Description                                                      |
+| ------------------ | ---------------------------------------------------------------- |
 | `--llm <provider>` | LLM backend: `ollama` (default), `local-llm`, `openai`, `custom` |
-| `-y, --yes` | Skip prompts, use defaults |
-| `--tailwind` | Include Tailwind CSS |
-| `--skip-install` | Skip dependency installation |
-| `--use-npm` | Use npm instead of pnpm |
-| `--use-yarn` | Use yarn instead of pnpm |
-| `-v, --verbose` | Show detailed output |
-| `--check` | Verify required dependencies are installed |
-| `--list-templates` | Show available LLM backends |
-| `--dry-run` | Preview without creating files |
+| `-y, --yes`        | Skip prompts, use defaults                                       |
+| `--tailwind`       | Include Tailwind CSS                                             |
+| `--skip-install`   | Skip dependency installation                                     |
+| `--use-npm`        | Use npm instead of pnpm                                          |
+| `--use-yarn`       | Use yarn instead of pnpm                                         |
+| `-v, --verbose`    | Show detailed output                                             |
+| `--check`          | Verify required dependencies are installed                       |
+| `--list-templates` | Show available LLM backends                                      |
+| `--dry-run`        | Preview without creating files                                   |
 
 ## Examples
 
