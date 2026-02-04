@@ -39,7 +39,7 @@ export async function promptForOptions(
     {
       type: "list",
       name: "template",
-      message: "Select ML backend:",
+      message: "Select model source:",
       choices: [
         {
           name: "Ollama - Run models locally via Ollama (Recommended)",

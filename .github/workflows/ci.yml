@@ -95,3 +95,19 @@ jobs:
           Get-ChildItem test-app/frontend/
           Get-ChildItem test-app/backend/
           Get-ChildItem test-app/src-tauri/
+
+      - name: Validate build commands (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          cd test-app
+          # Extract beforeBuildCommand from tauri.conf.json and verify it exists in package.json
+          BEFORE_BUILD=$(grep -o '"beforeBuildCommand": *"[^"]*"' src-tauri/tauri.conf.json | sed 's/.*: *"\(.*\)"/\1/')
+          BEFORE_DEV=$(grep -o '"beforeDevCommand": *"[^"]*"' src-tauri/tauri.conf.json | sed 's/.*: *"\(.*\)"/\1/')
+          echo "beforeBuildCommand: $BEFORE_BUILD"
+          echo "beforeDevCommand: $BEFORE_DEV"
+          # Check if the scripts exist (extract script name from 'pnpm <script>')
+          BUILD_SCRIPT=$(echo "$BEFORE_BUILD" | sed 's/pnpm //')
+          DEV_SCRIPT=$(echo "$BEFORE_DEV" | sed 's/pnpm //')
+          grep -q "\"$BUILD_SCRIPT\":" package.json || (echo "ERROR: Script '$BUILD_SCRIPT' not found in package.json" && exit 1)
+          grep -q "\"$DEV_SCRIPT\":" package.json || (echo "ERROR: Script '$DEV_SCRIPT' not found in package.json" && exit 1)
+          echo "All build commands validated!"
