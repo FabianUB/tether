@@ -13,25 +13,13 @@ A ready-to-use template for building AI/ML desktop applications.
 
 ## Quick Start
 
-### Option 1: Use as GitHub Template (Recommended)
-
-1. Click **"Use this template"** on GitHub
-2. Clone your new repository
-3. Start building:
-
-```bash
-cd my-app
-pnpm install
-pnpm dev
-```
-
-### Option 2: CLI Scaffolding
-
 ```bash
 npx create-tether-app my-app
 cd my-app
 pnpm dev
 ```
+
+Run `npx create-tether-app --help` for options (LLM backend, Tailwind, etc.).
 
 ## Project Structure
 
