@@ -337,7 +337,10 @@ async function removeExampleComponents(targetDir: string): Promise<void> {
   if (await fs.pathExists(appPath)) {
     let content = await fs.readFile(appPath, "utf-8");
     content = content.replace(/import.*Chat.*from.*\n?/g, "");
-    content = content.replace(/<Chat\s*\/>/g, "");
+    content = content.replace(
+      /\s*\{status === "connected" && <Chat\s*\/>\}/g,
+      "",
+    );
     await fs.writeFile(appPath, content);
   }
 }
