@@ -14,6 +14,7 @@ class ModelsResponse(BaseModel):
     models: list[str]
     backend: str
     error: str | None = None
+    needs_api_key: bool = False
 
 
 class SwitchModelRequest(BaseModel):
@@ -68,6 +69,7 @@ async def list_models(request: Request) -> ModelsResponse:
         current_model=llm_service.model_name,
         models=[llm_service.model_name] if llm_service.is_ready() else [],
         backend=backend,
+        needs_api_key=llm_service.needs_api_key,
     )
 
 

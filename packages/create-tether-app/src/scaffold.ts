@@ -12,7 +12,7 @@ import {
 
 export interface ScaffoldOptions {
   projectName: string;
-  template: "local-llm" | "ollama" | "openai" | "custom";
+  template: "local-llm" | "ollama" | "openai" | "gemini" | "custom";
   includeExample: boolean;
   skipInstall: boolean;
   packageManager: "pnpm" | "npm" | "yarn";
@@ -177,6 +177,18 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
       ),
     );
     console.log();
+  } else if (options.template === "gemini") {
+    console.log(
+      chalk.dim(
+        "  Note: Set your GEMINI_API_KEY in .env to use the Gemini API.",
+      ),
+    );
+    console.log(
+      chalk.dim(
+        "  Get an API key at: https://aistudio.google.com/apikey",
+      ),
+    );
+    console.log();
   }
 
   if (options.useTailwind) {
@@ -265,16 +277,23 @@ async function customizeForTemplate(
     let content = await fs.readFile(pyprojectPath, "utf-8");
 
     if (options.template === "ollama") {
-      // Remove llama-cpp-python, keep httpx for ollama
+      // Remove llama-cpp-python, openai, google-genai; keep httpx for ollama
       content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, "");
       content = content.replace(/^\s*"openai[^"]*",?\n/gm, "");
+      content = content.replace(/^\s*"google-genai[^"]*",?\n/gm, "");
     } else if (options.template === "openai") {
-      // Remove llama-cpp-python, keep openai
+      // Remove llama-cpp-python, google-genai; keep openai
       content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, "");
+      content = content.replace(/^\s*"google-genai[^"]*",?\n/gm, "");
+    } else if (options.template === "gemini") {
+      // Remove llama-cpp-python, openai; keep google-genai
+      content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, "");
+      content = content.replace(/^\s*"openai[^"]*",?\n/gm, "");
     } else if (options.template === "custom") {
       // Remove all LLM dependencies
       content = content.replace(/^\s*"llama-cpp-python[^"]*",?\n/gm, "");
       content = content.replace(/^\s*"openai[^"]*",?\n/gm, "");
+      content = content.replace(/^\s*"google-genai[^"]*",?\n/gm, "");
     }
 
     await fs.writeFile(pyprojectPath, content);
@@ -294,6 +313,8 @@ async function customizeForTemplate(
       content = content.replace(backendRegex, '$1"ollama"');
     } else if (options.template === "openai") {
       content = content.replace(backendRegex, '$1"openai"');
+    } else if (options.template === "gemini") {
+      content = content.replace(backendRegex, '$1"gemini"');
     } else if (options.template === "custom") {
       content = content.replace(backendRegex, '$1"mock"');
     }

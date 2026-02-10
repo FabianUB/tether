@@ -9,8 +9,8 @@ import {
 import chalk from "chalk";
 
 export interface CliOptions {
-  llm?: "ollama" | "local-llm" | "openai" | "custom";
-  template?: "ollama" | "local-llm" | "openai" | "custom"; // alias for --llm
+  llm?: "ollama" | "local-llm" | "openai" | "gemini" | "custom";
+  template?: "ollama" | "local-llm" | "openai" | "gemini" | "custom"; // alias for --llm
   yes?: boolean;
   skipPrompts?: boolean; // alias for --yes
   skipInstall?: boolean;
@@ -43,6 +43,12 @@ const LLM_TEMPLATES = [
       "Uses GPT models via the OpenAI API. Requires OPENAI_API_KEY env var.",
   },
   {
+    name: "gemini",
+    description: "Use Google Gemini API (requires API key)",
+    details:
+      "Uses Gemini models via the Google AI API. Requires GEMINI_API_KEY env var.",
+  },
+  {
     name: "custom",
     description: "Bare FastAPI setup, no LLM integration",
     details: "Clean slate for custom ML/AI implementations.",
@@ -59,7 +65,7 @@ export function createCli(): Command {
     .argument("[project-name]", "Name of the project to create")
     .option(
       "--llm <provider>",
-      "LLM backend: ollama (default), local-llm, openai, custom",
+      "LLM backend: ollama (default), local-llm, openai, gemini, custom",
     )
     .option("-t, --template <template>", "Alias for --llm")
     .option("-y, --yes", "Skip prompts and use defaults (ollama, with example)")
@@ -103,6 +109,7 @@ LLM Backends:
   ollama      Run models locally via Ollama (recommended)
   local-llm   Embed models directly with llama-cpp-python
   openai      Use OpenAI API (requires API key)
+  gemini      Use Google Gemini API (requires API key)
   custom      Bare FastAPI setup, no LLM integration
 `,
     )
@@ -283,7 +290,7 @@ LLM Backends:
         // Scaffold the project
         await scaffoldProject({
           projectName: name,
-          template: template as "local-llm" | "ollama" | "openai" | "custom",
+          template: template as "local-llm" | "ollama" | "openai" | "gemini" | "custom",
           includeExample,
           skipInstall: options.skipInstall || false,
           packageManager: options.useNpm

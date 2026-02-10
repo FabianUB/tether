@@ -57,6 +57,21 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div className="message-content">
         {isUser ? message.content : <Markdown>{message.content}</Markdown>}
       </div>
+      {!isUser && (message.input_tokens || message.output_tokens) && (
+        <div className="message-usage">
+          {message.input_tokens != null && (
+            <span>{message.input_tokens} in</span>
+          )}
+          {message.output_tokens != null && (
+            <span>{message.output_tokens} out</span>
+          )}
+          {message.cost != null && (
+            <span>
+              ${message.cost < 0.01 ? message.cost.toFixed(4) : message.cost.toFixed(2)}
+            </span>
+          )}
+        </div>
+      )}
     </div>
   );
 }

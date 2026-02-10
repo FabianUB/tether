@@ -6,7 +6,7 @@ export interface PromptOptions {
 
 export interface PromptAnswers {
   projectName: string;
-  template: "local-llm" | "ollama" | "openai" | "custom";
+  template: "local-llm" | "ollama" | "openai" | "gemini" | "custom";
   includeExample: boolean;
   useTailwind: boolean;
 }
@@ -52,6 +52,10 @@ export async function promptForOptions(
         {
           name: "OpenAI API - Use GPT models via API",
           value: "openai",
+        },
+        {
+          name: "Google Gemini API - Use Gemini models via API",
+          value: "gemini",
         },
         {
           name: "Custom - Bare FastAPI setup",

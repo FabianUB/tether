@@ -7,6 +7,9 @@ export interface ChatMessage {
   content: string;
   images?: string[];
   thinking?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  cost?: number;
   timestamp?: number;
 }
 
@@ -23,7 +26,9 @@ export interface ChatRequest {
 export interface ChatResponse {
   response: string;
   thinking?: string;
-  tokens_used?: number;
+  input_tokens?: number;
+  output_tokens?: number;
+  cost?: number;
   model?: string;
   finish_reason?: "stop" | "length" | "error";
 }
@@ -40,6 +45,12 @@ export interface ModelsResponse {
   models: string[];
   backend: string;
   error: string | null;
+  needs_api_key?: boolean;
+}
+
+export interface SetApiKeyResponse {
+  success: boolean;
+  message: string;
 }
 
 export interface SwitchModelResponse {
@@ -54,6 +65,7 @@ export type ConnectionStatus =
   | "loading-model"
   | "connected"
   | "disconnected"
+  | "needs-api-key"
   | "error";
 
 // Configuration
@@ -121,6 +133,13 @@ async function switchModel(model: string): Promise<SwitchModelResponse> {
   });
 }
 
+async function sendApiKey(apiKey: string): Promise<SetApiKeyResponse> {
+  return apiFetch<SetApiKeyResponse>("/api-key", {
+    method: "POST",
+    body: JSON.stringify({ api_key: apiKey }),
+  });
+}
+
 async function waitForBackend(): Promise<boolean> {
   // First, get the correct API URL from Tauri
   await getApiUrl();
@@ -177,8 +196,10 @@ export function useBackendStatus() {
           setHealth(healthData);
           setModelInfo(modelsData);
 
-          // Check if model is loaded
-          if (healthData.model_loaded) {
+          // Check if API key is needed
+          if (modelsData?.needs_api_key) {
+            setStatus("needs-api-key");
+          } else if (healthData.model_loaded) {
             setStatus("connected");
           } else if (modelsData?.error) {
             setStatus("error");
@@ -266,7 +287,22 @@ export function useBackendStatus() {
     }
   }, []);
 
-  return { status, health, modelInfo, error, retry, changeModel };
+  const submitApiKey = useCallback(async (apiKey: string) => {
+    const result = await sendApiKey(apiKey);
+    if (!result.success) {
+      throw new Error(result.message);
+    }
+    // Refresh health and models after successful key submission
+    const [healthData, modelsData] = await Promise.all([
+      checkHealth(),
+      fetchModels().catch(() => null),
+    ]);
+    setHealth(healthData);
+    setModelInfo(modelsData);
+    setStatus("connected");
+  }, []);
+
+  return { status, health, modelInfo, error, retry, changeModel, submitApiKey };
 }
 
 export function useChat() {
@@ -302,6 +338,9 @@ export function useChat() {
           role: "assistant",
           content: response.response,
           thinking: response.thinking,
+          input_tokens: response.input_tokens,
+          output_tokens: response.output_tokens,
+          cost: response.cost,
           timestamp: Date.now(),
         };
 

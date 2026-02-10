@@ -8,6 +8,8 @@ from typing import Literal, Optional
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
+from app.services.pricing import estimate_cost
+
 
 class ChatMessage(BaseModel):
     role: Literal["user", "assistant", "system"]
@@ -43,8 +45,14 @@ class ChatResponse(BaseModel):
     thinking: Optional[str] = Field(
         default=None, description="Model's reasoning/thinking content (for thinking models)"
     )
-    tokens_used: Optional[int] = Field(
-        default=None, description="Number of tokens used"
+    input_tokens: Optional[int] = Field(
+        default=None, description="Input tokens used"
+    )
+    output_tokens: Optional[int] = Field(
+        default=None, description="Output tokens generated"
+    )
+    cost: Optional[float] = Field(
+        default=None, description="Estimated cost in USD"
     )
     model: Optional[str] = Field(default=None, description="Model used")
     finish_reason: Optional[Literal["stop", "length", "error"]] = Field(
@@ -112,6 +120,9 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
         use_thinking = False if has_images else (body.think if body.think is not None else True)
 
         # Use chat API if available (supports thinking models), fallback to complete
+        input_tokens = None
+        output_tokens = None
+
         if hasattr(llm_service, "chat"):
             result = await llm_service.chat(
                 messages,
@@ -119,10 +130,12 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
                 max_tokens=body.max_tokens,
                 think=use_thinking,
             )
-            # chat() returns dict with 'content' and 'thinking'
+            # chat() returns dict with 'content', 'thinking', and token counts
             if isinstance(result, dict):
                 response = result.get("content", "")
                 thinking = result.get("thinking")
+                input_tokens = result.get("input_tokens")
+                output_tokens = result.get("output_tokens")
             else:
                 # Fallback if chat returns string
                 response, thinking = parse_thinking_content(result)
@@ -141,9 +154,17 @@ async def chat(request: Request, body: ChatRequest) -> ChatResponse:
             )
             response, thinking = parse_thinking_content(raw_response)
 
+        # Estimate cost if token counts are available
+        cost = None
+        if input_tokens is not None and output_tokens is not None:
+            cost = estimate_cost(llm_service.model_name, input_tokens, output_tokens)
+
         return ChatResponse(
             response=response,
             thinking=thinking,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            cost=cost,
             model=llm_service.model_name,
             finish_reason="stop",
         )

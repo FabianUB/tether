@@ -41,7 +41,7 @@ class LLMSettings(BaseSettings):
         extra="ignore",
     )
 
-    tether_llm_backend: Literal["local", "ollama", "openai", "mock"] = "ollama"
+    tether_llm_backend: Literal["local", "ollama", "openai", "gemini", "mock"] = "ollama"
     tether_model_path: Optional[str] = None
     openai_api_key: Optional[str] = None
     tether_openai_model: str = "gpt-4o-mini"
@@ -49,6 +49,9 @@ class LLMSettings(BaseSettings):
     # Ollama settings - model can be empty to auto-select
     tether_ollama_model: Optional[str] = None
     tether_ollama_base_url: Optional[str] = None  # Uses OLLAMA_HOST or default
+    # Gemini settings
+    gemini_api_key: Optional[str] = None
+    tether_gemini_model: str = "gemini-2.0-flash"
 
 
 @lru_cache
@@ -59,8 +62,13 @@ def get_settings() -> LLMSettings:
 class LLMService(ABC):
     """Abstract base class for LLM services."""
 
-    service_type: Literal["local", "ollama", "openai", "mock"] = "mock"
+    service_type: Literal["local", "ollama", "openai", "gemini", "mock"] = "mock"
     model_name: str = "unknown"
+
+    @property
+    def needs_api_key(self) -> bool:
+        """Whether the service is waiting for an API key."""
+        return False
 
     @abstractmethod
     async def initialize(self) -> None:
@@ -92,7 +100,7 @@ class LLMService(ABC):
 class MockLLMService(LLMService):
     """Mock LLM service for testing."""
 
-    service_type: Literal["local", "ollama", "openai", "mock"] = "mock"
+    service_type: Literal["local", "ollama", "openai", "gemini", "mock"] = "mock"
     model_name = "mock"
 
     def __init__(self):
@@ -120,7 +128,7 @@ class MockLLMService(LLMService):
 class OpenAIService(LLMService):
     """OpenAI API service."""
 
-    service_type: Literal["local", "ollama", "openai", "mock"] = "openai"
+    service_type: Literal["local", "ollama", "openai", "gemini", "mock"] = "openai"
 
     def __init__(
         self,
@@ -132,12 +140,21 @@ class OpenAIService(LLMService):
         self._model = model or settings.tether_openai_model
         self._client = None
         self._ready = False
+        self._needs_key = False
 
     @property
     def model_name(self) -> str:
         return self._model
 
+    @property
+    def needs_api_key(self) -> bool:
+        return self._needs_key
+
     async def initialize(self) -> None:
+        if not self._api_key:
+            self._needs_key = True
+            return
+        self._needs_key = False
         try:
             from openai import AsyncOpenAI
 
@@ -145,6 +162,11 @@ class OpenAIService(LLMService):
             self._ready = True
         except ImportError:
             raise ImportError("openai package not installed")
+
+    async def set_api_key(self, api_key: str) -> None:
+        """Set the API key at runtime and reinitialize."""
+        self._api_key = api_key
+        await self.initialize()
 
     async def cleanup(self) -> None:
         if self._client:
@@ -172,6 +194,214 @@ class OpenAIService(LLMService):
         )
 
         return response.choices[0].message.content or ""
+
+    async def chat(
+        self,
+        messages: list[dict],
+        *,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        think: bool = True,
+    ) -> dict:
+        """
+        Chat completion using the OpenAI API.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content'
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+            think: Unused (kept for interface consistency)
+
+        Returns:
+            Dict with 'content', 'thinking', 'input_tokens', 'output_tokens'
+        """
+        if not self._client:
+            raise RuntimeError("OpenAI client not initialized")
+
+        response = await self._client.chat.completions.create(
+            model=self._model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+        usage = response.usage
+        return {
+            "content": response.choices[0].message.content or "",
+            "thinking": None,
+            "input_tokens": usage.prompt_tokens if usage else None,
+            "output_tokens": usage.completion_tokens if usage else None,
+        }
+
+
+class GeminiService(LLMService):
+    """Google Gemini API service."""
+
+    service_type: Literal["local", "ollama", "openai", "gemini", "mock"] = "gemini"
+
+    def __init__(
+        self,
+        api_key: Optional[str] = None,
+        model: Optional[str] = None,
+    ):
+        settings = get_settings()
+        self._api_key = api_key or settings.gemini_api_key
+        self._model = model or settings.tether_gemini_model
+        self._client = None
+        self._ready = False
+        self._needs_key = False
+
+    @property
+    def model_name(self) -> str:
+        return self._model
+
+    @property
+    def needs_api_key(self) -> bool:
+        return self._needs_key
+
+    async def initialize(self) -> None:
+        if not self._api_key:
+            self._needs_key = True
+            return
+        self._needs_key = False
+        try:
+            from google import genai
+
+            self._client = genai.Client(api_key=self._api_key)
+            self._ready = True
+        except ImportError:
+            raise ImportError(
+                "google-genai package not installed. Install it with:\n"
+                "  pip install google-genai\n"
+                "Or: uv add google-genai"
+            )
+
+    async def set_api_key(self, api_key: str) -> None:
+        """Set the API key at runtime and reinitialize."""
+        self._api_key = api_key
+        await self.initialize()
+
+    async def cleanup(self) -> None:
+        self._client = None
+        self._ready = False
+
+    def is_ready(self) -> bool:
+        return self._ready and self._client is not None
+
+    async def complete(
+        self,
+        prompt: str,
+        *,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+    ) -> str:
+        if not self._client:
+            raise RuntimeError("Gemini client not initialized")
+
+        from google.genai import types
+
+        config = types.GenerateContentConfig(
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+        )
+
+        response = await self._client.aio.models.generate_content(
+            model=self._model,
+            contents=prompt,
+            config=config,
+        )
+
+        return response.text or ""
+
+    async def chat(
+        self,
+        messages: list[dict],
+        *,
+        temperature: float = 0.7,
+        max_tokens: Optional[int] = None,
+        think: bool = True,
+    ) -> dict:
+        """
+        Chat completion using the Gemini API.
+
+        Args:
+            messages: List of message dicts with 'role' and 'content'
+            temperature: Sampling temperature
+            max_tokens: Maximum tokens to generate
+            think: Enable thinking for supported models (default: True)
+
+        Returns:
+            Dict with 'content' and optionally 'thinking' keys
+        """
+        if not self._client:
+            raise RuntimeError("Gemini client not initialized")
+
+        from google.genai import types
+
+        # Extract system instruction from messages
+        system_instruction = None
+        chat_messages = []
+        for msg in messages:
+            if msg["role"] == "system":
+                system_instruction = msg["content"]
+            else:
+                chat_messages.append(msg)
+
+        # Build history (all messages except the last one)
+        history = []
+        for msg in chat_messages[:-1]:
+            role = "model" if msg["role"] == "assistant" else msg["role"]
+            history.append(
+                types.Content(
+                    role=role,
+                    parts=[types.Part.from_text(text=msg["content"])],
+                )
+            )
+
+        # Build config
+        config = types.GenerateContentConfig(
+            temperature=temperature,
+            max_output_tokens=max_tokens,
+            system_instruction=system_instruction,
+        )
+
+        # Enable thinking for 2.5 models
+        is_thinking_model = "2.5" in self._model
+        if think and is_thinking_model:
+            config.thinking_config = types.ThinkingConfig(
+                thinking_budget=8192,
+            )
+
+        # Create chat and send current message
+        chat_session = self._client.aio.chats.create(
+            model=self._model,
+            history=history,
+            config=config,
+        )
+
+        current_message = chat_messages[-1]["content"] if chat_messages else ""
+        response = await chat_session.send_message(current_message)
+
+        # Parse response parts for thinking content
+        thinking_text = None
+        content_text = ""
+
+        if response.candidates and response.candidates[0].content:
+            for part in response.candidates[0].content.parts:
+                if hasattr(part, "thought") and part.thought:
+                    thinking_text = (thinking_text or "") + (part.text or "")
+                else:
+                    content_text += part.text or ""
+        else:
+            content_text = response.text or ""
+
+        usage = response.usage_metadata
+        return {
+            "content": content_text,
+            "thinking": thinking_text,
+            "input_tokens": usage.prompt_token_count if usage else None,
+            "output_tokens": usage.candidates_token_count if usage else None,
+        }
 
 
 async def discover_ollama(base_url: Optional[str] = None) -> OllamaDiscoveryResult:
@@ -212,7 +442,7 @@ async def discover_ollama(base_url: Optional[str] = None) -> OllamaDiscoveryResu
 class OllamaService(LLMService):
     """Ollama LLM service."""
 
-    service_type: Literal["local", "ollama", "openai", "mock"] = "ollama"
+    service_type: Literal["local", "ollama", "openai", "gemini", "mock"] = "ollama"
 
     def __init__(
         self,
@@ -386,13 +616,15 @@ class OllamaService(LLMService):
         return {
             "content": message.get("content", ""),
             "thinking": message.get("thinking"),  # None if not a thinking model
+            "input_tokens": data.get("prompt_eval_count"),
+            "output_tokens": data.get("eval_count"),
         }
 
 
 class LocalLLMService(LLMService):
     """Local LLM service using llama-cpp-python."""
 
-    service_type: Literal["local", "ollama", "openai", "mock"] = "local"
+    service_type: Literal["local", "ollama", "openai", "gemini", "mock"] = "local"
 
     def __init__(
         self,
@@ -518,6 +750,8 @@ def get_llm_service() -> LLMService:
 
     if backend == "openai":
         return OpenAIService()
+    elif backend == "gemini":
+        return GeminiService()
     elif backend == "ollama":
         return OllamaService()
     elif backend == "local":

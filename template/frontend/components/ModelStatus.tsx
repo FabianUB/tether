@@ -28,6 +28,8 @@ export function ModelStatus({
         return "var(--color-success)";
       case "connecting":
         return "var(--color-warning)";
+      case "needs-api-key":
+        return "var(--color-warning)";
       case "error":
       case "disconnected":
         return "var(--color-error)";
@@ -41,6 +43,8 @@ export function ModelStatus({
         return health?.model_loaded ? "Ready" : "Connected";
       case "connecting":
         return "Connecting...";
+      case "needs-api-key":
+        return "API Key Required";
       case "error":
         return "Error";
       case "disconnected":

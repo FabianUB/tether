@@ -1,10 +1,11 @@
 import { useBackendStatus } from "./hooks/useApi";
 import { Chat } from "./components/Chat";
 import { ModelStatus } from "./components/ModelStatus";
+import { ApiKeyForm } from "./components/ApiKeyForm";
 import "./App.css";
 
 function App() {
-  const { status, health, modelInfo, error, retry, changeModel } =
+  const { status, health, modelInfo, error, retry, changeModel, submitApiKey } =
     useBackendStatus();
 
   return (
@@ -43,6 +44,10 @@ function App() {
             <p className="error-detail">The backend is no longer responding</p>
             <button onClick={retry}>Reconnect</button>
           </div>
+        )}
+
+        {status === "needs-api-key" && (
+          <ApiKeyForm modelInfo={modelInfo} onSubmit={submitApiKey} />
         )}
 
         {status === "error" && (
