@@ -290,7 +290,12 @@ LLM Backends:
         // Scaffold the project
         await scaffoldProject({
           projectName: name,
-          template: template as "local-llm" | "ollama" | "openai" | "gemini" | "custom",
+          template: template as
+            | "local-llm"
+            | "ollama"
+            | "openai"
+            | "gemini"
+            | "custom",
           includeExample,
           skipInstall: options.skipInstall || false,
           packageManager: options.useNpm

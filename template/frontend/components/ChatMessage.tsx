@@ -67,7 +67,10 @@ export function ChatMessage({ message }: ChatMessageProps) {
           )}
           {message.cost != null && (
             <span>
-              ${message.cost < 0.01 ? message.cost.toFixed(4) : message.cost.toFixed(2)}
+              $
+              {message.cost < 0.01
+                ? message.cost.toFixed(4)
+                : message.cost.toFixed(2)}
             </span>
           )}
         </div>

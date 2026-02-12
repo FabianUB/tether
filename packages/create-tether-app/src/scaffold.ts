@@ -184,9 +184,7 @@ export async function scaffoldProject(options: ScaffoldOptions): Promise<void> {
       ),
     );
     console.log(
-      chalk.dim(
-        "  Get an API key at: https://aistudio.google.com/apikey",
-      ),
+      chalk.dim("  Get an API key at: https://aistudio.google.com/apikey"),
     );
     console.log();
   }

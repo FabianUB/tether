@@ -85,7 +85,9 @@ export function ApiKeyForm({ modelInfo, onSubmit }: ApiKeyFormProps) {
         >
           {isSubmitting ? "Connecting..." : "Connect"}
         </button>
-        <p className="api-key-hint">Stored in memory only — not saved to disk.</p>
+        <p className="api-key-hint">
+          Stored in memory only — not saved to disk.
+        </p>
       </form>
     </div>
   );
