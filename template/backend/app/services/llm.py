@@ -250,6 +250,7 @@ class GeminiService(LLMService):
         self._client = None
         self._ready = False
         self._needs_key = False
+        self._available_models: list[str] = []
 
     @property
     def model_name(self) -> str:
@@ -258,6 +259,11 @@ class GeminiService(LLMService):
     @property
     def needs_api_key(self) -> bool:
         return self._needs_key
+
+    @property
+    def available_models(self) -> list[str]:
+        """List of available models (populated after initialize)."""
+        return self._available_models
 
     async def initialize(self) -> None:
         if not self._api_key:
@@ -268,6 +274,27 @@ class GeminiService(LLMService):
             from google import genai
 
             self._client = genai.Client(api_key=self._api_key)
+
+            # Discover available models
+            discovery = await discover_gemini_models(self._client)
+            if discovery.available:
+                self._available_models = discovery.models
+            else:
+                print(f"Warning: Could not discover Gemini models: {discovery.error}")
+                # Fall back to just the configured model
+                self._available_models = [self._model]
+
+            # Verify configured model is available
+            if self._available_models and self._model not in self._available_models:
+                available_str = ", ".join(self._available_models[:5])
+                if len(self._available_models) > 5:
+                    available_str += f", ... ({len(self._available_models) - 5} more)"
+                print(
+                    f"Warning: Model '{self._model}' not found in available models. "
+                    f"Available: {available_str}. "
+                    f"It may still work if you have access."
+                )
+
             self._ready = True
         except ImportError:
             raise ImportError(
@@ -402,6 +429,40 @@ class GeminiService(LLMService):
             "input_tokens": usage.prompt_token_count if usage else None,
             "output_tokens": usage.candidates_token_count if usage else None,
         }
+
+
+@dataclass
+class GeminiDiscoveryResult:
+    """Result of Gemini model discovery."""
+
+    available: bool
+    models: list[str]
+    error: Optional[str] = None
+
+
+async def discover_gemini_models(client) -> GeminiDiscoveryResult:
+    """Discover available Gemini models from the API."""
+    try:
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(None, client.models.list)
+        models = []
+        for model in response:
+            # Only include models that support generateContent
+            actions = getattr(model, "supported_actions", None)
+            if actions and "generateContent" in actions:
+                name = model.name or ""
+                # Strip "models/" prefix
+                short_name = name.removeprefix("models/")
+                if short_name:
+                    models.append(short_name)
+        models.sort()
+        return GeminiDiscoveryResult(available=True, models=models)
+    except Exception as e:
+        return GeminiDiscoveryResult(
+            available=False,
+            models=[],
+            error=f"Failed to list Gemini models: {str(e)}",
+        )
 
 
 async def discover_ollama(base_url: Optional[str] = None) -> OllamaDiscoveryResult:
