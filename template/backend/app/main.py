@@ -8,7 +8,7 @@ from typing import AsyncIterator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.routes import health, chat, models
+from app.routes import health, chat, models, apikey
 from app.services.llm import get_llm_service
 
 
@@ -47,6 +47,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router)
     app.include_router(chat.router)
     app.include_router(models.router)
+    app.include_router(apikey.router)
 
     return app
 

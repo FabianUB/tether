@@ -5,7 +5,7 @@ Model discovery and switching endpoints.
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, Field
 
-from app.services.llm import discover_ollama, get_ollama_base_url
+from app.services.llm import discover_gemini_models, discover_ollama, get_ollama_base_url
 
 
 class ModelsResponse(BaseModel):
@@ -14,6 +14,7 @@ class ModelsResponse(BaseModel):
     models: list[str]
     backend: str
     error: str | None = None
+    needs_api_key: bool = False
 
 
 class SwitchModelRequest(BaseModel):
@@ -62,12 +63,31 @@ async def list_models(request: Request) -> ModelsResponse:
             error=discovery.error,
         )
 
+    # For Gemini, use discovered models
+    if backend == "gemini":
+        models = getattr(llm_service, "_available_models", [])
+        if not models and llm_service.is_ready():
+            # Re-discover if models list is empty but service is ready
+            client = getattr(llm_service, "_client", None)
+            if client:
+                discovery = await discover_gemini_models(client)
+                if discovery.available:
+                    models = discovery.models
+        return ModelsResponse(
+            available=llm_service.is_ready() or llm_service.needs_api_key,
+            current_model=llm_service.model_name if llm_service.is_ready() else None,
+            models=models,
+            backend=backend,
+            needs_api_key=llm_service.needs_api_key,
+        )
+
     # For other backends, return the configured model
     return ModelsResponse(
         available=llm_service.is_ready(),
         current_model=llm_service.model_name,
         models=[llm_service.model_name] if llm_service.is_ready() else [],
         backend=backend,
+        needs_api_key=llm_service.needs_api_key,
     )
 
 
@@ -110,6 +130,24 @@ async def switch_model(request: Request, body: SwitchModelRequest) -> SwitchMode
             )
 
         # Switch the model
+        llm_service._model = body.model
+
+        return SwitchModelResponse(
+            success=True,
+            previous_model=previous_model,
+            current_model=body.model,
+            message=f"Switched from {previous_model} to {body.model}",
+        )
+
+    # For Gemini, switch to the requested model
+    if backend == "gemini":
+        available = getattr(llm_service, "_available_models", [])
+        if body.model not in available:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Model '{body.model}' not found. Available: {', '.join(available)}",
+            )
+
         llm_service._model = body.model
 
         return SwitchModelResponse(
