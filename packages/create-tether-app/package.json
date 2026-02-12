@@ -1,6 +1,6 @@
 {
   "name": "create-tether-app",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "CLI tool for scaffolding Tether AI/ML desktop applications",
   "type": "module",
   "bin": {
